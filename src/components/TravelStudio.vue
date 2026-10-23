@@ -2,15 +2,16 @@
  <view class="travel-studio">
   <view class="studio-heading"><view><text class="eyebrow">YOUR PLACES, YOUR STORIES</text><view class="studio-title">旅行足迹</view></view><text class="local-badge">仅保存在本机</text></view>
   <view class="travel-stats"><view><text>{{ stats.regions }}</text><text>省级地区</text></view><view><text>{{ stats.cities }}</text><text>地点 / 城市</text></view><view><text>{{ stats.trips }}</text><text>次旅行</text></view></view>
-  <view class="map-tools"><view class="toggle-label"><switch :disabled="busy" :checked="j.mapEnabled" color="#526c58" @change="setSwitch('mapEnabled',$event)"/><text>足迹地图合成到海报</text></view><view class="map-actions"><button :disabled="busy" class="quiet" @click="resetView">查看旅行</button><button :disabled="busy" class="quiet" @click="map?.overview()">全国概览</button><button :disabled="busy || !active" :class="['quiet',{'pick-active':picking}]" @click="togglePicking">{{ picking?'取消选点':'地图选点' }}</button></view></view>
+  <view class="map-tools"><view class="toggle-label"><switch :disabled="busy" :checked="j.mapEnabled" color="#526c58" @change="setSwitch('mapEnabled',$event)"/><text>足迹地图合成到海报</text></view><view class="map-actions"><button :disabled="busy" :aria-pressed="marking" :class="['quiet',{'pick-active':marking}]" @click="toggleMarking">{{ marking?'地区点亮：开':'地区点亮：关' }}</button><button :disabled="busy" class="quiet" @click="resetView">查看旅行</button><button :disabled="busy" class="quiet" @click="map?.overview()">全国概览</button><button :disabled="busy || !active" :class="['quiet',{'pick-active':picking}]" @click="togglePicking">{{ picking?'取消选点':'地图选点' }}</button></view></view>
   <text class="travel-help network-note">精细底图由 OpenFreeMap 提供，将请求远程瓦片和字体；不发送旅行记录或照片文件，但请求的地图范围可反映浏览区域。服务无可用性保证。</text>
   <view ref="host" id="travel-map" class="travel-map" role="img" aria-label="可缩放的中国旅行足迹地图；可用下方地区列表替代地图点击"></view>
   <text v-if="mapLoading" class="travel-help">正在加载精细地图…</text>
   <view v-if="mapError" class="travel-warning">{{ mapError }}<button :disabled="busy" class="quiet" @click="mountMap">重试地图</button></view>
-  <text class="travel-help">可缩放至城市、道路层级；点击聚合数字展开，点击足迹查看记录。“地图选点”可填写自定义地点。连线仅表示访问顺序，不是沿路导航。地区手动标记在下方列表操作，本版不在精细底图上填色。</text>
+  <text class="travel-help">可缩放至城市、道路层级；点击聚合数字展开，点击足迹查看记录。“地图选点”可填写自定义地点。连线仅表示访问顺序，不是沿路导航。开启“地区点亮”后可点击地图省级区域，也可用下方列表；浅色覆盖仅供足迹概览，不是精确行政界线。</text>
+  <text class="travel-help route-status" role="status">当前地图：{{ validStopCount }} 个有效地点 · {{ shownRouteCount }} 段连线{{ j.showRoutes?'':'（已隐藏）' }}。连线需要同一次旅行至少两个不同的已核验地点；点亮地区不会自动生成路线。</text>
   <view v-if="pending.length" class="travel-warning">有 {{ pending.length }} 条旧坐标待核验，仍保留在记录中，但不绘制到精细地图，也不跨这些记录连线。请在时间线点击“更新坐标”，或编辑为已核验的 WGS84 地点。</view>
   <view class="travel-line"><label for="export-scope">海报地图范围</label><select :disabled="busy" id="export-scope" v-model="j.exportScope"><option value="trip">当前旅行范围（无有效点时为全国）</option><option value="china">全国足迹概览</option></select></view>
-  <view v-if="mapStops.length" class="map-stop-list"><button :disabled="busy" v-for="s in mapStops" :key="s.id" class="quiet" @click="selectedStopId=s.id">查看 {{ s.place.name }}</button></view>
+  <view v-if="mapStops.length" class="map-stop-list"><button :disabled="busy" v-for="s in mapStops" :key="s.id" class="quiet" @click="inspectStop(s)">查看 {{ s.place.name }}</button></view>
   <view v-if="selectedStop" class="selected-stop"><text>{{ selectedStop.place.name }} · {{ selectedStop.date || '未填写日期' }}</text><text>{{ selectedStop.note || '还没有札记' }}</text><image v-if="selectedThumb" :src="selectedThumb" mode="aspectFill" class="stop-photo"/><text v-else-if="selectedStop.photoSlot">关联照片未找到</text><button :disabled="busy" class="quiet" @click="selectedStopId=''">收起</button></view>
   <view class="travel-line"><label for="trip-filter">地图范围</label><select :disabled="busy" id="trip-filter" v-model="j.activeTrip"><option value="all">全部旅行</option><option v-for="t in j.trips" :key="t.id" :value="t.id">{{ t.name }}</option></select></view>
   <view class="map-tools"><view class="toggle-label"><switch :disabled="busy" :checked="j.showRoutes" color="#526c58" @change="setSwitch('showRoutes',$event)"/><text>显示地点顺序连线</text></view><button :disabled="busy" class="quiet" @click="regionsOpen=!regionsOpen">{{ regionsOpen?'收起地区':'标记去过的地区' }}</button></view>
@@ -44,30 +45,35 @@
 <script setup lang="ts">
 import {computed,ref,watch,onMounted,onBeforeUnmount,nextTick} from 'vue'
 import type {Journal,Stop,Place} from '../core/travel'
-import {travelStats,uid,validDate,moveStop,visibleTrips,isWGS84,pendingStops} from '../core/travel'
+import {travelStats,uid,validDate,moveStop,visibleTrips,isWGS84,pendingStops,routeSegments} from '../core/travel'
+import {visibleRegionIds,toggleManualRegion,hasRecordedRegion} from '../core/region-map'
 import type {Palette} from '../types'
 import placeData from '../data/places-wgs84.json'
 import {createTravelMap,regions} from '../platform/travel-map-h5'
 const props=defineProps<{journal:Journal;palette:Palette;draftStatus:string;busy:boolean;photoThumbs:Record<string,string>;photoExamples:Record<string,boolean>;photoIds:Record<string,string>;retainedPhotoCount:number}>()
 defineEmits(['save-draft','restore-draft','clear-draft','apply-trip'])
 const j=props.journal,places=placeData as Place[],host=ref<any>(),regionsOpen=ref(false),hint=ref(''),mapError=ref(''),selectedStopId=ref('')
-const placeQuery=ref(''),picking=ref(false),mapLoading=ref(true),editingOriginal=ref<Place|null>(null)
+const placeQuery=ref(''),marking=ref(true),picking=ref(false),mapLoading=ref(true),editingOriginal=ref<Place|null>(null)
 const filteredPlaces=computed(()=>places.filter(p=>p.id===placeId.value||!placeQuery.value||p.name.includes(placeQuery.value)||p.regionName.includes(placeQuery.value)))
 const pending=computed(()=>pendingStops(j))
+const validStopCount=computed(()=>visibleTrips(j).flatMap(t=>t.stops).filter(s=>isWGS84(s.place)).length),shownRouteCount=computed(()=>j.showRoutes?routeSegments(j).length:0)
 const editingPhotoId=ref(''),editingPhotoSlot=ref('')
 const newTripName=ref(''),editingId=ref(''),placeId=ref(places[0].id),customName=ref(''),customRegion=ref('110000'),lng=ref('116.405285'),lat=ref('39.904989'),stopDate=ref(''),stopNote=ref(''),photoSlot=ref('')
 const mapStops=computed(()=>visibleTrips(j).flatMap(t=>t.stops))
 const stats=computed(()=>travelStats(j)),active=computed(()=>j.trips.find(t=>t.id===j.activeTrip)),selectedStop=computed(()=>j.trips.flatMap(t=>t.stops).find(s=>s.id===selectedStopId.value)),selectedThumb=computed(()=>selectedStop.value?props.photoThumbs[selectedStop.value.photoId||selectedStop.value.photoSlot]:'')
 let map:ReturnType<typeof createTravelMap>|undefined,timer:ReturnType<typeof setTimeout>|undefined
 function setSwitch(key:'mapEnabled'|'showRoutes',event:any){j[key]=!!event.detail.value}
-function regionVisited(id:string){return j.visitedRegions.includes(id)||j.trips.some(t=>t.stops.some(s=>s.place.region===id))}
-function toggleRegion(id:string){if(props.busy)return;const at=j.visitedRegions.indexOf(id);if(at>=0){j.visitedRegions.splice(at,1);hint.value=regionVisited(id)?'已移除手动标记；该地区仍有到访记录，因此继续高亮。':'已移除手动地区标记'}else{j.visitedRegions.push(id);hint.value='已标记该地区去过；可再次点击取消手动标记'}j.mapEnabled=true}
-async function mountMap(){await nextTick();mapLoading.value=true;mapError.value='';try{map?.dispose();const node=host.value?.$el||host.value;if(!node)throw new Error('地图容器未准备好');map=createTravelMap(node,{onStop:id=>{selectedStopId.value=id},onPick:coord=>{if(!active.value||props.busy)return;if(coord[0]<73||coord[0]>136||coord[1]<3||coord[1]>54){hint.value='当前版本只支持中国地区范围内的地点记录';return}editingId.value='';editingOriginal.value=null;placeId.value='custom';lng.value=String(coord[0]);lat.value=String(coord[1]);customName.value='';hint.value='坐标已选取，请下滚填写地点名称与所属地区，再添加地点';picking.value=false;map?.setPicking(false)},onStatus:message=>{mapLoading.value=false;mapError.value=message}});map.update(j,props.palette)}catch{mapLoading.value=false;mapError.value='精细地图加载失败或当前设备不支持 WebGL2；可继续编辑记录并使用静态手账。'}}
-function togglePicking(){picking.value=!picking.value;map?.setPicking(picking.value);hint.value=picking.value?'请点击地图选择 WGS84 地点，之后填写名称和所属地区。':''}
+function regionVisited(id:string){return visibleRegionIds(j).includes(id)}
+function toggleRegion(id:string){if(props.busy)return;const result=toggleManualRegion(j,id);hint.value=result==='recorded'?'该地区有当前旅行到访记录，不能只取消点亮；请编辑或删除对应记录。':result==='removed'?(hasRecordedRegion(j,id)?'手动标记已取消；当前旅行仍有该地区记录，因此继续点亮。':'已取消手动地区点亮。'):'已点亮该地区（手动标记适用于全部旅行）；此操作不添加城市或路线。';j.mapEnabled=true}
+function toggleMarking(){marking.value=!marking.value;if(marking.value){picking.value=false;map?.setPicking(false)}map?.setMarking(marking.value);hint.value=marking.value?'可以点击地图点亮/取消地区；有到访记录的地区需修改记录才能取消。':'地区点亮已关闭，可以自由浏览地图。'}
+function inspectStop(s:Stop){selectedStopId.value=s.id;if(isWGS84(s.place))map?.focus(s.place.coord);else hint.value='该地点的旧坐标待核验，暂不能在精细地图定位。'}
+async function mountMap(){await nextTick();mapLoading.value=true;mapError.value='';try{map?.dispose();const node=host.value?.$el||host.value;if(!node)throw new Error('地图容器未准备好');map=createTravelMap(node,{onStop:id=>{selectedStopId.value=id},onRegion:id=>toggleRegion(id),onPick:coord=>{if(!active.value||props.busy)return;if(coord[0]<73||coord[0]>136||coord[1]<3||coord[1]>54){hint.value='当前版本只支持中国地区范围内的地点记录';return}cancelEdit();placeId.value='custom';lng.value=String(coord[0]);lat.value=String(coord[1]);customName.value='';hint.value='坐标已选取，请下滚填写地点名称与所属地区，再添加地点';picking.value=false;map?.setPicking(false)},onStatus:message=>{mapLoading.value=false;mapError.value=message}});map.setMarking(marking.value);map.setPicking(picking.value);map.update(j,props.palette)}catch{mapLoading.value=false;mapError.value='精细地图加载失败或当前设备不支持 WebGL2；可继续编辑记录并使用静态手账。'}}
+function togglePicking(){picking.value=!picking.value;if(picking.value){marking.value=false;map?.setMarking(false)}map?.setPicking(picking.value);hint.value=picking.value?'请点击地图选择 WGS84 地点，之后填写名称和所属地区。':''}
 async function migrateStop(s:Stop){const replacement=places.find(p=>p.id===s.place.id);if(!replacement){editStop(s);placeId.value='custom';hint.value='没有可靠的同名预设匹配，请手动核验 WGS84 坐标或使用地图选点；旧坐标暂不变。';return}const accepted=await new Promise<boolean>(resolve=>uni.showModal({title:'确认更新该地点坐标？',content:`${s.place.name}：将原坐标 ${s.place.coord.join(', ')} 替换为 GeoNames WGS84 地点 ${replacement.coord.join(', ')}。这是采用新来源，不是对旧坐标做数学转换；原坐标会保留。`,success:r=>resolve(r.confirm),fail:()=>resolve(false)}));if(accepted){s.place={...JSON.parse(JSON.stringify(replacement)),originalCoord:s.place.originalCoord||[...s.place.coord]};hint.value='坐标已更新，原坐标仍保留在记录数据中。'}}
 function resetView(){map?.reset()}
 watch(()=>[j,props.palette],()=>{clearTimeout(timer);timer=setTimeout(()=>{try{map?.update(j,props.palette)}catch{mapError.value='地图更新失败，请重试'}},100)},{deep:true})
-watch(()=>j.activeTrip,()=>{cancelEdit();picking.value=false;map?.setPicking(false)})
+watch(mapStops,stops=>{if(!stops.some(s=>s.id===selectedStopId.value))selectedStopId.value=''})
+watch(()=>j.activeTrip,()=>{selectedStopId.value='';cancelEdit();picking.value=false;map?.setPicking(false)})
 function addTrip(){if(!newTripName.value.trim()){hint.value='请先填写旅行名称';return}if(j.trips.length>=100){hint.value='最多保存 100 次旅行';return}const t={id:uid(),name:newTripName.value.trim(),note:'',stops:[]};j.trips.push(t);j.activeTrip=t.id;j.mapEnabled=true;newTripName.value='';hint.value='旅行已创建，请添加第一站'}
 function onPlaceChange(){/* Keep stop identity when editing a different city. */}
 async function saveStop(){if(!active.value)return;if(!validDate(stopDate.value)){hint.value='日期无效，请使用 YYYY-MM-DD，例如 2026-10-23';return}let place:Place

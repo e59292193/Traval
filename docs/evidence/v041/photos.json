@@ -1,0 +1,127 @@
+{
+  "browser": "153.0.8010.12",
+  "checks": [
+    {
+      "name": "initial render with 4 empty slots and empty date",
+      "status": "passed"
+    },
+    {
+      "name": "4 different aspect ratios, JPEG PNG and WebP decode",
+      "status": "passed"
+    },
+    {
+      "name": "independent zoom / pan sliders and pointer drag",
+      "status": "passed"
+    },
+    {
+      "name": "all 4 photo slots can be independently cropped",
+      "status": "passed"
+    },
+    {
+      "name": "3 palettes preserve photo and text data",
+      "status": "passed"
+    },
+    {
+      "name": "1500 × 2010 JPEG and preview/export consistency",
+      "status": "passed",
+      "width": 1500,
+      "height": 2010,
+      "meanAbsoluteRGBError": 3.62218629076838
+    },
+    {
+      "name": "desktop download",
+      "status": "passed"
+    },
+    {
+      "name": "lower-resolution 1000 × 1340 export",
+      "status": "passed"
+    },
+    {
+      "name": "Chinese, long English, emoji, and text length boundaries",
+      "status": "passed"
+    },
+    {
+      "name": "remove, reselect, sequential rapid replacement do not clear other slots",
+      "status": "passed"
+    },
+    {
+      "name": "unsupported format / file-size / pixel limit / decode failure preserve work and recover",
+      "status": "passed"
+    },
+    {
+      "name": "cancel file selection keeps current photos",
+      "status": "passed"
+    },
+    {
+      "name": "EXIF orientation 6 applied once in Chromium",
+      "status": "passed",
+      "width": 180,
+      "height": 320
+    },
+    {
+      "name": "forced export failure recovers and retains work",
+      "status": "passed"
+    },
+    {
+      "name": "forced font readiness failure uses system fallback with visible warning",
+      "status": "passed"
+    },
+    {
+      "name": "10 photo-replace/export/close cycles completed; sampled Chromium metrics",
+      "status": "passed",
+      "baseline": {
+        "jsHeapUsed": 14777540,
+        "documents": 4,
+        "nodes": 1481,
+        "jsEventListeners": 600
+      },
+      "after": {
+        "jsHeapUsed": 15008588,
+        "documents": 4,
+        "nodes": 1630,
+        "jsEventListeners": 635
+      },
+      "limitation": "JS heap/DOM sample only; not a mobile native bitmap-memory or long-running leak proof"
+    },
+    {
+      "name": "390px narrow-screen crop and export without horizontal overflow",
+      "status": "passed"
+    },
+    {
+      "name": "reset confirmation and empty-slot export cancel / confirm",
+      "status": "passed"
+    },
+    {
+      "name": "explicit demo loading labels all sample photos",
+      "status": "passed"
+    },
+    {
+      "name": "demo export requires explicit confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "replacing demo photo removes only its example flag and captions persist",
+      "status": "passed"
+    },
+    {
+      "name": "nickname, notes and wish fields are editable",
+      "status": "passed"
+    },
+    {
+      "name": "one-click clear of all-demo photos retains edited text and map assets",
+      "status": "passed"
+    },
+    {
+      "name": "template image failure shows retry and recovers with a single preview canvas",
+      "status": "passed"
+    },
+    {
+      "name": "only disclosed map-provider external requests; no photo uploads or runtime page errors",
+      "status": "passed",
+      "external": [],
+      "postRequests": [],
+      "requestCount": 61
+    }
+  ],
+  "errors": []
+}

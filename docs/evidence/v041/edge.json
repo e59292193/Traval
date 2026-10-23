@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "V0.3 draft restores with both unverified stops retained and excluded from precise map",
+    "editing a legacy custom note never silently relabels coordinates as WGS84",
+    "explicit migration adopts GeoNames WGS84 and preserves exact original coordinates",
+    "single-city map fits street-level view and native zoom controls remain 44px",
+    "national overview remains independent of selected trip extent",
+    "blocked map provider reports error and requires explicit consent for static JPEG fallback"
+  ],
+  "errors": []
+}

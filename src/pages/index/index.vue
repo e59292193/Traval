@@ -1,10 +1,10 @@
 <template>
  <view class="app-shell">
-  <view class="topbar"><view class="brand"><view class="brand-mark">↗</view><view><text class="brand-name">沿途</text><text class="brand-en">TRAVEL JOURNAL</text></view></view><text class="top-note">让每次出发，都有迹可循。</text><text class="prototype">{{ platform.name==='H5' ? 'H5 原型' : '小程序验证版' }} · v0.4</text></view>
+  <view class="topbar"><view class="brand"><view class="brand-mark">↗</view><view><text class="brand-name">沿途</text><text class="brand-en">TRAVEL JOURNAL</text></view></view><text class="top-note">让每次出发，都有迹可循。</text><text class="prototype">{{ platform.name==='H5' ? 'H5 原型' : '小程序验证版' }} · v0.4.1</text></view>
   <view class="intro"><view><text class="eyebrow">MAKE ROOM FOR MEMORIES</text><view class="intro-title">把足迹，装进一张手账地图。</view><text class="intro-sub">水彩纸张、地图拼贴和拍立得照片，收藏属于你的沿途。</text></view><text class="privacy">◉ 照片仅在当前设备内处理</text></view>
   <view class="workspace">
    <view class="preview-panel">
-    <view class="preview-toolbar"><text class="section-label">作品预览</text><text class="preview-tag">精细地图手账 · V4</text></view>
+    <view class="preview-toolbar"><text class="section-label">作品预览</text><text class="preview-tag">精细地图手账 · V4.1</text></view>
     <view class="poster-wrap"><view id="preview-host" class="poster-host" :class="{'is-cropping':cropOpen}">
      <!-- #ifdef MP-WEIXIN -->
      <canvas id="poster-preview" canvas-id="poster-preview" type="2d" class="mp-preview" :style="{width:mpPreviewWidth+'px',height:(mpPreviewWidth*journey.height/journey.width)+'px'}" :disable-scroll="cropOpen" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd" @touchcancel="touchEnd" />

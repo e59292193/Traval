@@ -1,0 +1,49 @@
+
+> traval-journal@0.4.1 test
+> tsx --test tests/*.test.ts
+
+✔ cover preserves aspect and fills landscape / portrait / square / panoramic (1.952536ms)
+✔ normalized source crop is independent of render scale (0.271134ms)
+✔ large drags cannot expose blank edges (0.328568ms)
+✔ pan axis without overflow stays stable (0.265532ms)
+✔ invalid values are clamped (0.999155ms)
+✔ invalid image sizes fail explicitly (0.414536ms)
+✔ grapheme limits preserve family emoji and accents (16.245917ms)
+✔ Chinese and long English wrap without whitespace (0.517907ms)
+✔ explicit newlines are preserved (0.34663ms)
+✔ overflow adds ellipsis at minimum font size (1.551138ms)
+✔ valid serializable template / separate work (1.036628ms)
+✔ duplicate IDs / bindings / palette fail validation (0.781103ms)
+✔ PNG dimensions detected before decoding (0.77347ms)
+✔ huge PNG rejected before decoding (0.610227ms)
+✔ JPEG and WebP header parsing (0.447996ms)
+✔ HEIC and truncated files rejected (0.46958ms)
+✔ v2 geographic image and photo positions are fixed configuration, not implicit geocoding (0.375868ms)
+✔ v2 photo box is shared by rendering and pan mapping (0.597663ms)
+✔ draft validates complete empty work and current schema (30.315496ms)
+✔ draft requires every binding to have an actual supported image Blob (2.01779ms)
+✔ invalid work version and overlength text cannot overwrite current edit (0.807975ms)
+✔ archived trip photo survives without a current handout binding, and missing archive is rejected (1.643422ms)
+✔ Taiwan name override is exact and does not rename strait or cities (5.531648ms)
+✔ region overlay includes all 34 IDs with unique Taiwan province name (0.434186ms)
+✔ manual highlights toggle without inventing city stops or blocking cancellation (1.658216ms)
+✔ recorded regions cannot silently gain manual pins and trip filtering is consistent (0.630589ms)
+✔ worker features can structuredClone Vue reactive input and never retain mutable coordinates (2.268757ms)
+✔ same-coordinate consecutive visits retain records but generate no invisible route (0.362847ms)
+✔ empty travel has no invented city/trip/region counts (3.243435ms)
+✔ stats deduplicate cities and merge manually visited regions (0.547811ms)
+✔ routes never connect different trips and follow list order (0.780723ms)
+✔ valid calendar date checks include leap years (3.776863ms)
+✔ travel schema roundtrips, rejects unknown coordinates, duplicate ids and bad dates (2.034509ms)
+✔ legacy coordinates migrate without relabeling or deleting records (0.777006ms)
+✔ unverified middle stop cannot be skipped to connect a false route (0.581157ms)
+✔ map export extent handles empty, single, identical and selected trip points (0.683156ms)
+✔ schema rejects invalid coordinate systems, export scopes and original coords (0.787775ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1618.090296

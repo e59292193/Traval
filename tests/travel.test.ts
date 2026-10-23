@@ -1,7 +1,7 @@
 import {test} from 'node:test'
 import assert from 'node:assert/strict'
 import {createJournal,validateJournal,travelStats,routeSegments,moveStop,validDate,mapFeatures,mapExtent,pendingStops} from '../src/core/travel'
-const place=(id='a',region='110000')=>({id,name:id,region,regionName:'北京市',coord:[116,39] as [number,number],coordinateSystem:'WGS84' as const})
+const place=(id='a',region='110000')=>({id,name:id,region,regionName:'北京市',coord:[id==='b'?117:116,39] as [number,number],coordinateSystem:'WGS84' as const})
 const stop=(id:string,p=place())=>({id,place:p,date:'2026-10-23',note:'',photoSlot:''})
 test('empty travel has no invented city/trip/region counts',()=>assert.deepEqual(travelStats(createJournal()),{trips:0,cities:0,regions:0,stops:0}))
 test('stats deduplicate cities and merge manually visited regions',()=>{const j=createJournal();j.visitedRegions=['310000'];j.trips=[{id:'t1',name:'旅行',note:'',stops:[stop('s1'),stop('s2')]}];assert.deepEqual(travelStats(j),{trips:1,cities:1,regions:2,stops:2})})

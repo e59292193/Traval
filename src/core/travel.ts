@@ -17,14 +17,14 @@ export function validateJournal(value:unknown):Journal{
 }
 export function visibleTrips(j:Journal){return j.activeTrip==='all'?j.trips:j.trips.filter(t=>t.id===j.activeTrip)}
 export function travelStats(j:Journal){const stops=j.trips.flatMap(t=>t.stops),regions=new Set([...j.visitedRegions,...stops.map(s=>s.place.region)]),cities=new Set(stops.map(s=>s.place.id));return{trips:j.trips.length,cities:cities.size,regions:regions.size,stops:stops.length}}
-export function routeSegments(j:Journal){return visibleTrips(j).flatMap(t=>t.stops.slice(1).flatMap((s,i)=>isWGS84(t.stops[i].place)&&isWGS84(s.place)?[{tripId:t.id,coords:[t.stops[i].place.coord,s.place.coord]}]:[]))}
+export function routeSegments(j:Journal){return visibleTrips(j).flatMap(t=>t.stops.slice(1).flatMap((s,i)=>isWGS84(t.stops[i].place)&&isWGS84(s.place)&&t.stops[i].place.coord.some((v,k)=>v!==s.place.coord[k])?[{tripId:t.id,fromStopId:t.stops[i].id,toStopId:s.id,coords:[[...t.stops[i].place.coord],[...s.place.coord]]}]:[]))}
 export function moveStop(trip:Trip,index:number,delta:number){const next=index+delta;if(next<0||next>=trip.stops.length)return;[trip.stops[index],trip.stops[next]]=[trip.stops[next],trip.stops[index]]}
 
 export function isWGS84(place:Place){return place.coordinateSystem==='WGS84'}
 export function pendingStops(j:Journal){return j.trips.flatMap(t=>t.stops).filter(s=>!isWGS84(s.place))}
 export function mapFeatures(j:Journal){
  const trips=visibleTrips(j),stops=trips.flatMap(t=>t.stops).filter(s=>isWGS84(s.place)),unique=[...new Map(stops.map(s=>[s.place.id,s])).values()]
- return{points:{type:'FeatureCollection' as const,features:unique.map(s=>({type:'Feature' as const,geometry:{type:'Point' as const,coordinates:s.place.coord},properties:{stopId:s.id,name:s.place.name}}))},routes:{type:'FeatureCollection' as const,features:(j.showRoutes?routeSegments(j):[]).map(r=>({type:'Feature' as const,geometry:{type:'LineString' as const,coordinates:r.coords},properties:{tripId:r.tripId}}))}}
+ return{points:{type:'FeatureCollection' as const,features:unique.map(s=>({type:'Feature' as const,geometry:{type:'Point' as const,coordinates:[...s.place.coord]},properties:{stopId:s.id,name:s.place.name}}))},routes:{type:'FeatureCollection' as const,features:(j.showRoutes?routeSegments(j):[]).map(r=>({type:'Feature' as const,geometry:{type:'LineString' as const,coordinates:r.coords},properties:{tripId:r.tripId,fromStopId:r.fromStopId,toStopId:r.toStopId}}))}}
 }
 export function mapExtent(j:Journal,scope:'china'|'trip'):{bounds:[[number,number],[number,number]];single:boolean}{
  const points=visibleTrips(j).flatMap(t=>t.stops).filter(s=>isWGS84(s.place)).map(s=>s.place.coord)

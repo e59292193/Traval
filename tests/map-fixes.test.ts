@@ -1,0 +1,14 @@
+import {test} from 'node:test'
+import assert from 'node:assert/strict'
+import {expression} from '@maplibre/maplibre-gl-style-spec'
+import {reactive} from 'vue'
+import {chineseMapName} from '../src/core/map-style'
+import {createJournal,mapFeatures,routeSegments} from '../src/core/travel'
+import {regionFeatures,toggleManualRegion,visibleRegionIds,regionBoundary} from '../src/core/region-map'
+const stop=(id:string,region='330000',coord:[number,number]=[120.15,30.28])=>({id,place:{id,name:id,region,regionName:region,coord,coordinateSystem:'WGS84' as const},date:'',note:'',photoSlot:''})
+test('Taiwan name override is exact and does not rename strait or cities',()=>{const c=expression.createExpression(chineseMapName,'layers[0].layout.text-field');assert.equal(c.result,'success');if(c.result!=='success')return;for(const name of ['台湾','臺灣','台灣','Taiwan'])assert.equal(c.value.evaluate({zoom:4},{type:'Point',properties:{name}}),'台湾省');for(const name of ['台湾海峡','台北市','台东市'])assert.equal(c.value.evaluate({zoom:4},{type:'Point',properties:{name}}),name)})
+test('region overlay includes all 34 IDs with unique Taiwan province name',()=>{assert.equal(regionBoundary.features.length,34);assert.equal(new Set(regionBoundary.features.map(f=>f.properties.regionId)).size,34);assert.equal(regionBoundary.features.find(f=>f.id==='710000')?.properties.name,'台湾省')})
+test('manual highlights toggle without inventing city stops or blocking cancellation',()=>{const j=createJournal();assert.equal(toggleManualRegion(j,'510000'),'added');assert.equal(regionFeatures(j).features.filter(f=>f.properties.visited).length,1);assert.equal(toggleManualRegion(j,'510000'),'removed');assert.equal(j.trips.length,0);assert.deepEqual(visibleRegionIds(j),[])})
+test('recorded regions cannot silently gain manual pins and trip filtering is consistent',()=>{const j=createJournal();j.trips=[{id:'a',name:'a',note:'',stops:[stop('s1')]},{id:'b',name:'b',note:'',stops:[stop('s2','310000')]}];j.activeTrip='a';assert.deepEqual(visibleRegionIds(j),['330000']);assert.equal(toggleManualRegion(j,'330000'),'recorded');assert.deepEqual(j.visitedRegions,[]);j.visitedRegions=['510000'];j.activeTrip='b';assert.deepEqual(visibleRegionIds(j),['310000','510000'])})
+test('worker features can structuredClone Vue reactive input and never retain mutable coordinates',()=>{const j=reactive(createJournal());j.trips=[{id:'a',name:'a',note:'',stops:[stop('s1'),stop('s2','310000',[121.47,31.23])]}];const d=mapFeatures(j);assert.doesNotThrow(()=>structuredClone(d));j.trips[0].stops[0].place.coord[0]=119;assert.equal(d.points.features[0].geometry.coordinates[0],120.15);assert.equal(d.routes.features[0].geometry.coordinates[0][0],120.15)})
+test('same-coordinate consecutive visits retain records but generate no invisible route',()=>{const j=createJournal();j.trips=[{id:'a',name:'a',note:'',stops:[stop('s1'),stop('s2')]}];assert.equal(routeSegments(j).length,0);assert.equal(j.trips[0].stops.length,2)})

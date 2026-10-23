@@ -1,0 +1,29 @@
+{
+  "checks": [
+    "new map initializes with zero real travel statistics",
+    "create trip and two dated city stops with correct stats",
+    "actual app route switch updates model count off and on",
+    "invalid calendar date rejected without changing records",
+    "reorder and edit timeline stop",
+    "keyboard-accessible region selection updates visited stats",
+    "actual app manual region can be cancelled and lit again",
+    "MapLibre real basemap zoom buttons and trip bounds reset",
+    "map picking fills WGS84 coordinates and creates removable custom stop",
+    "national and current-trip poster extent selections",
+    "multiple trips and all-trip filter",
+    "real local photo slot linked to travel stop",
+    "replacing handout photo preserves the previously linked historical travel photo",
+    "IndexedDB reload/restore preserves trips, stops and actual photo Blob",
+    "accessible footprint inspection shows date, note and associated photo",
+    "selected trip loads its archived photos, dates and title into handout without deleting travel records",
+    "static-map fallback and footprint-map composition can be switched interactively",
+    "simulated storage quota failure keeps current work intact",
+    "incompatible persisted draft is rejected before current photos or records are replaced",
+    "interactive-map scrapbook exports full 1500x2010 JPEG",
+    "loaded app edits palette and saves draft without network",
+    "390px mobile layout without horizontal overflow",
+    "delete persisted draft keeps current edit",
+    "no uncaught exceptions; external requests only to disclosed map tile/font provider; no user-photo uploads"
+  ],
+  "errors": []
+}

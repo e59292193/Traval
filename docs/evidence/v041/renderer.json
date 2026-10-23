@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "real MapLibre renderer and all footprint sources initialized",
+    "actual map click lights and unlights Sichuan without adding city stops",
+    "reactive trip data reaches Worker and creates three markers and two route segments",
+    "route off/on and stop reorder update actual Worker source rather than only UI state",
+    "all trips do not cross-connect and one-stop trip clears prior trip routes",
+    "rapid route switches converge to latest state with manual and trip highlights combined",
+    "point-picking takes precedence over footprint and province clicks",
+    "Taiwan feature is present under the shared 台湾省 label expression",
+    "cached high-resolution export awaits Worker updates and removes hidden routes",
+    "region-only changes invalidate export cache; national export includes highlights",
+    "renderer remains usable at 390px with no horizontal overflow"
+  ],
+  "errors": [],
+  "mapErrors": []
+}
