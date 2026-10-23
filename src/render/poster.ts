@@ -57,7 +57,7 @@ function scene(c:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,asset
  // Actual page content, not invented trip/country statistics.
  const count=Object.values(work.photos).filter(Boolean).length,stats=journal?travelStats(journal):null,hasTrips=!!stats&&(!!stats.stops||!!stats.regions||!!stats.trips||!!journal?.mapEnabled)
  const dynamic=!!journal?.mapEnabled&&assets.has('travel-map')
- if(dynamic&&journal){const selected=visibleTrips(journal);label(c,'中国旅行足迹',300,133,15,p.ink);paragraph(c,journal.activeTrip==='all'?'全部旅行':selected[0]?.name||'旅行足迹',300,151,340,13,11,1,p.accent);paragraph(c,selected.flatMap(t=>t.stops.map(s=>s.place.name)).join(' → '),270,608,300,14,12,2,p.ink)}
+ if(dynamic&&journal){const selected=visibleTrips(journal);label(c,journal.exportScope==='china'?'中国旅行足迹':'旅途足迹',300,133,15,p.ink);paragraph(c,journal.activeTrip==='all'?'全部旅行':selected[0]?.name||'旅行足迹',300,151,340,13,11,1,p.accent)}
  label(c,'我的足迹',244,701,24,p.ink,HAND,'600')
  paragraph(c,String(hasTrips?stats!.cities:count).padStart(2,'0'),260,753,95,66,42,1,p.ink,HAND)
  label(c,hasTrips?'个地点 · 全部旅行':'张照片 · 本页珍藏',248,831,17,p.ink)
@@ -79,7 +79,7 @@ function scene(c:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,asset
  for(const [i,word] of ['出发','遇见','收藏','再出发'].entries()){pin(c,426+i*133,1231,.7);label(c,word,426+i*133,1274,14,p.ink,FONT,'400','center')}
  const examples=Object.values(work.photos).filter(b=>b?.example).length
  if(examples)label(c,`示例照片 ${examples}/4 · AI生成场景，不是真实旅行记录`,461,667,11,'#91613a')
- label(c,dynamic?'DataV GeoJSON 原型 · 连线非导航 · 公开发布要求待核验':'静态底图 GS(2016)2923号 · 照片为手账拼贴，不作地理定位',461,684,11,'#6a6758')
+ label(c,dynamic?'MapLibre 精细底图 · 连线非导航 · 坐标 GeoNames / 用户核验':'静态底图 GS(2016)2923号 · 照片为手账拼贴，不作地理定位',461,684,11,'#6a6758')
 }
 export function drawPoster(ctx:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,width:number,assets:Map<string,Photo>=new Map(),journal?:Journal){
  const ratio=width/t.width,p=t.palettes.find(p=>p.id===work.paletteId)||t.palettes[0]

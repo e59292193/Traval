@@ -1,0 +1,43 @@
+
+> traval-journal@0.4.0 test
+> tsx --test tests/*.test.ts
+
+✔ cover preserves aspect and fills landscape / portrait / square / panoramic (2.159616ms)
+✔ normalized source crop is independent of render scale (0.292231ms)
+✔ large drags cannot expose blank edges (0.304606ms)
+✔ pan axis without overflow stays stable (0.22796ms)
+✔ invalid values are clamped (1.173413ms)
+✔ invalid image sizes fail explicitly (0.45321ms)
+✔ grapheme limits preserve family emoji and accents (18.453936ms)
+✔ Chinese and long English wrap without whitespace (0.660415ms)
+✔ explicit newlines are preserved (0.403085ms)
+✔ overflow adds ellipsis at minimum font size (1.885882ms)
+✔ valid serializable template / separate work (1.171851ms)
+✔ duplicate IDs / bindings / palette fail validation (0.734287ms)
+✔ PNG dimensions detected before decoding (0.537438ms)
+✔ huge PNG rejected before decoding (0.51042ms)
+✔ JPEG and WebP header parsing (0.331627ms)
+✔ HEIC and truncated files rejected (1.595866ms)
+✔ v2 geographic image and photo positions are fixed configuration, not implicit geocoding (0.310307ms)
+✔ v2 photo box is shared by rendering and pan mapping (0.462661ms)
+✔ draft validates complete empty work and current schema (23.100582ms)
+✔ draft requires every binding to have an actual supported image Blob (1.578877ms)
+✔ invalid work version and overlength text cannot overwrite current edit (0.503598ms)
+✔ archived trip photo survives without a current handout binding, and missing archive is rejected (1.204467ms)
+✔ empty travel has no invented city/trip/region counts (2.420376ms)
+✔ stats deduplicate cities and merge manually visited regions (0.380517ms)
+✔ routes never connect different trips and follow list order (0.538948ms)
+✔ valid calendar date checks include leap years (2.829006ms)
+✔ travel schema roundtrips, rejects unknown coordinates, duplicate ids and bad dates (1.528185ms)
+✔ legacy coordinates migrate without relabeling or deleting records (0.589687ms)
+✔ unverified middle stop cannot be skipped to connect a false route (0.374417ms)
+✔ map export extent handles empty, single, identical and selected trip points (0.487714ms)
+✔ schema rejects invalid coordinate systems, export scopes and original coords (0.548005ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 878.256358

@@ -1,3 +1,5 @@
+> V0.4：H5 地图已改用 MapLibre + OpenFreeMap 远程底图，坐标来源/署名/网络行为以 [V0.4 说明](TRAVEL-V0.4.md) 为准。下述旧版实现仅保留作历史说明。
+
 # V0.3 架构增量（当前）
 
 - `core/travel.ts`：独立 JSON 兼容 Journal v1 → Trip → ordered Stop → Place。保存稳定地点 ID、地区码、原始经纬度、日期、札记和照片版本ID与来源槽位；不保存 ECharts 对象、屏幕像素或临时文件路径。

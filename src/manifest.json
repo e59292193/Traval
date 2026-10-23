@@ -2,8 +2,8 @@
   "name": "沿途旅行手账",
   "appid": "",
   "description": "本地照片旅行海报编辑器原型",
-  "versionName": "0.3.0",
-  "versionCode": "300",
+  "versionName": "0.4.0",
+  "versionCode": "400",
   "transformPx": false,
   "uniStatistics": {
     "enable": false

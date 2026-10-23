@@ -1,3 +1,5 @@
+> V0.4 更新：当前 H5 地图会请求远程底图，以下 V0.2/V0.3 无外部地图请求的说明为历史行为。
+
 # 安全、隐私与发布边界
 
 ## 当前数据处理
@@ -28,7 +30,7 @@
 
 ## 框架默认外链处理
 
-端到端网络验收发现 uni-app 的 H5 框架会在 3 秒后预加载 `cdn.dcloud.net.cn` 上的导航阴影图片。项目使用自定义导航，并不需要这张图。现已通过 `vite.config.ts` 的构建插件移除 CSS 中这些特定框架阴影 URL，并在全局样式禁用对应预加载动画；没有改写 node_modules。正式构建应通过 E2E 的「无外部请求」检查，框架升级后必须回归。此处理不等同于修复依赖安全漏洞。
+端到端网络验收发现 uni-app 的 H5 框架会在 3 秒后预加载 `cdn.dcloud.net.cn` 上的导航阴影图片。项目使用自定义导航，并不需要这张图。现已通过 `vite.config.ts` 的构建插件移除 CSS 中这些特定框架阴影 URL，并在全局样式禁用对应预加载动画；没有改写 node_modules。正式构建应通过 E2E 的「仅允许已披露地图服务外部请求」检查，框架升级后必须回归。此处理不等同于修复依赖安全漏洞。
 
 ## V0.2 静态素材和字体
 
@@ -44,3 +46,9 @@
 ## V0.3 本次审计快照
 
 新引入的ECharts已选择6.1.0，修复审计对初选5.6.0指出的moderate XSS问题；tooltip仍采用richText而非拼接HTML。复测后的生产口径仍有41项（25 high、10 moderate、6 low），主要来自既有依赖链，见`evidence/v3/npm-audit-production.json`。未使用强制升级掩盖兼容性风险；上线前仍需整体依赖升级评估。
+
+## V0.4 地图网络和审计
+
+底图/字体/sprite 来自 `tiles.openfreemap.org`。会暴露 IP、时间和瓦片范围，不发送照片或旅行文字。MapLibre 的旅行 GeoJSON 仅在浏览器处理；断网冷启动未支持。精细导出加载失败需确认静态回退。无 GPS、无 geocoding、无坐标自动转换。旧记录不静默改标 WGS84。见 [V0.4 说明](TRAVEL-V0.4.md)。
+
+本次 `npm audit --omit=dev --json` 快照：41 项（low 6 / moderate 10 / high 25 / critical 0），见 `evidence/npm-audit-v0.4-production.json`。属于依赖树报告，不等于已评估全部可利用攻击面；仍阻塞商业发布，未强制换版。
