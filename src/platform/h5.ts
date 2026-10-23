@@ -1,8 +1,10 @@
 import type {Platform,Target,Photo,ExportResult} from '../types'
 import {MAX_FILE_BYTES,readImageHeader} from '../core/image-header'
+import {caveatFont} from '../assets/caveat'
 const bitmapLimit=2400
 export function createH5Platform():Platform {
  const cleanup=new Set<()=>void>()
+ let handFontReady=false
  function track(fn:()=>void){cleanup.add(fn);return ()=>{if(cleanup.delete(fn))fn()}}
  const blobURL=(blob:Blob)=>{const url=URL.createObjectURL(blob);return {url,dispose:track(()=>URL.revokeObjectURL(url))}}
  async function blob(canvas:HTMLCanvasElement):Promise<Blob>{return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('图片生成失败，请降低分辨率后重试')),'image/jpeg',.94))}
@@ -21,6 +23,11 @@ export function createH5Platform():Platform {
    const ctx=canvas.getContext('2d');if(!ctx)throw new Error('当前浏览器无法创建 Canvas，请尝试更新浏览器')
    if(preview){const host=document.getElementById(id);if(!host)throw new Error('预览容器未准备好');host.appendChild(canvas);canvas.style.cssText='display:block;width:100%;height:auto;touch-action:pan-y';canvas.setAttribute('aria-label','旅行海报实时预览；选定照片后可拖动裁剪')}
    return {ctx,width,height,native:canvas,destroy(){canvas.remove();canvas.width=1;canvas.height=1}}
+  },
+  async loadAsset(_target,id,source){
+   let decoded:HTMLImageElement
+   try{decoded=await image(source)}catch{throw new Error('模板或示例素材加载失败，请重试；必要时重新准备画布。')}
+   return {id,source:decoded,width:decoded.naturalWidth,height:decoded.naturalHeight,thumbnail:source,dispose:track(()=>{decoded.src=''})}
   },
   async choosePhoto(){
    const file=await pick();if(!file)return null
@@ -50,9 +57,14 @@ export function createH5Platform():Platform {
    return {id:`photo-${Date.now()}-${Math.random().toString(36).slice(2)}`,source,width,height,thumbnail:mini.url,dispose} satisfies Photo
   },
   async prepareFonts(){
+   let fontWarning:string|null=null
+   if(document.fonts&&!handFontReady){
+    try{const face=new FontFace('TravalCaveat',`url(${caveatFont})`,{weight:'400 700'});await face.load();(document.fonts as unknown as {add:(font:FontFace)=>void}).add(face);handFontReady=true}
+    catch{fontWarning='手写字体加载失败，已回退系统字体；请检查预览'}
+   }
    if(!document.fonts)return '浏览器不支持字体准备检测，使用系统字体；请检查导出文字'
    let timer:ReturnType<typeof setTimeout>|undefined
-   try{await Promise.race([document.fonts.ready,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('字体准备超时')),4000)})]);return null}catch{return '字体准备失败或超时，已回退系统字体；请检查预览'}finally{clearTimeout(timer)}
+   try{await Promise.race([document.fonts.ready,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('字体准备超时')),4000)})]);return fontWarning}catch{return '字体准备失败或超时，已回退系统字体；请检查预览'}finally{clearTimeout(timer)}
   },
   async exportJPEG(target){const result=blobURL(await blob(target.native as HTMLCanvasElement));return {...result,width:target.width,height:target.height}},
   async save(result){
@@ -62,7 +74,7 @@ export function createH5Platform():Platform {
   bindDrag(target,fn){
    const canvas=target.native as HTMLCanvasElement;let last:{x:number;y:number}|null=null
    const down=(e:PointerEvent)=>{if(!canvas.classList.contains('crop-active'))return;canvas.setPointerCapture(e.pointerId);last={x:e.clientX,y:e.clientY}}
-   const move=(e:PointerEvent)=>{if(!last)return;const rect=canvas.getBoundingClientRect();fn((e.clientX-last.x)*1000/rect.width,(e.clientY-last.y)*1400/rect.height);last={x:e.clientX,y:e.clientY}}
+   const move=(e:PointerEvent)=>{if(!last)return;const rect=canvas.getBoundingClientRect();fn((e.clientX-last.x)*1000/rect.width,(e.clientY-last.y)*(target.height/target.width*1000)/rect.height);last={x:e.clientX,y:e.clientY}}
    const up=()=>{last=null}
    canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up)
    // Class reflects edit mode without touching DOM outside this adapter.

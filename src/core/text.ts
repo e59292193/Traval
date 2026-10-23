@@ -1,4 +1,4 @@
-export const limits={title:24,subtitle:40,date:30} as const
+export const limits={title:24,subtitle:40,date:30,name:12,wish:24,note:60} as const
 export function graphemes(text:string):string[]{
  if(typeof Intl!=='undefined'&&'Segmenter' in Intl) return Array.from(new Intl.Segmenter('zh',{granularity:'grapheme'}).segment(text),s=>s.segment)
  // Older runtimes: preserve combining marks, variation selectors, emoji modifiers and ZWJ sequences.

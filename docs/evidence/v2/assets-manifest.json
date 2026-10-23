@@ -1,0 +1,39 @@
+{
+  "backdrop.jpg": {
+    "bytes": 123220,
+    "sha256": "a57ac22b0c904e65c7c6ebc874806ce3f85288351aec8794e2e3bcab2907e351"
+  },
+  "china-map.png": {
+    "bytes": 267775,
+    "sha256": "0b76e0822fa4f454a27a03e3c3221696e63a6166ea9dbb9cdf9c562a7dab4cf8"
+  },
+  "stickers.png": {
+    "bytes": 91402,
+    "sha256": "b82d2e2f93d0349028df147388f3f8c7be30c2c091b893505c97f48394dfb47e"
+  },
+  "Caveat-latin.woff": {
+    "bytes": 98076,
+    "sha256": "9a2b2418647f8315654d8d904a430b56e8b16caecd9cf1d0fbefa3dfac85e768"
+  },
+  "sample-0.jpg": {
+    "bytes": 47186,
+    "sha256": "3d774d2580254c69a512af7072fe8b7a5a9a7a029d0b957a0ba71b385850dec0"
+  },
+  "sample-1.jpg": {
+    "bytes": 83157,
+    "sha256": "ec1bc59106c5788abd7e3f397768a6ce8cd7604f0caa453bd8f0e75e43b13be1"
+  },
+  "sample-2.jpg": {
+    "bytes": 41734,
+    "sha256": "1d935fd7c073832eeda90a355a63f27886a16d37cfeb3413f6024f7dcb856118"
+  },
+  "sample-3.jpg": {
+    "bytes": 41276,
+    "sha256": "fec256662cbe7d009c41d99ac6d0a0b4afedc7f5e2dcf17359e398c845affaa0"
+  },
+  "source-pdf": {
+    "sha256": "3ceb905309a548c3a2f87747f2086baa8cdca32f804cefc30bfdcc43cd9fbcf9",
+    "actualPrintedApproval": "GS(2016)2923号",
+    "source": "https://img.cnwest.com/a/10001/202308/28/c041fac818b2c516d61a5065cfefe1de.pdf"
+  }
+}

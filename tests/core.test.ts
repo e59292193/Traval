@@ -5,6 +5,7 @@ import {graphemes,limitText,wrapText,fitText} from '../src/core/text'
 import {createWork,validateTemplate} from '../src/core/work'
 import {readImageHeader} from '../src/core/image-header'
 import {journey} from '../src/templates/journey'
+import {photoBox} from '../src/core/photo-box'
 test('cover preserves aspect and fills landscape / portrait / square / panoramic',()=>{
  for(const [iw,ih] of [[1600,900],[900,1600],[1000,1000],[4000,500]])for(const zoom of [1,1.5,3])for(const x of [0,.5,1]){
   const r=cropRect(iw,ih,346,262,{zoom,x,y:1-x})
@@ -30,3 +31,7 @@ test('PNG dimensions detected before decoding',()=>{const b=new Uint8Array(24),d
 test('huge PNG rejected before decoding',()=>{const b=new Uint8Array(24),d=new DataView(b.buffer);b.set([137,80,78,71]);b.set([73,72,68,82],12);d.setUint32(16,16000);d.setUint32(20,16000);assert.throws(()=>readImageHeader(b),/像素过大/)})
 test('JPEG and WebP header parsing',()=>{const jpg=new Uint8Array([255,216,255,192,0,11,8,3,132,6,64,1,1,17,0,255,217]);assert.equal(readImageHeader(jpg).width,1600);const webp=new Uint8Array(30);for(const [s,i]of [['RIFF',0],['WEBP',8],['VP8X',12]] as const)webp.set(Array.from(s,c=>c.charCodeAt(0)),i);webp[24]=255;webp[27]=127;assert.equal(readImageHeader(webp).width,256)})
 test('HEIC and truncated files rejected',()=>{assert.throws(()=>readImageHeader(new Uint8Array(32)),/HEIC/);assert.throws(()=>readImageHeader(new Uint8Array(2)),/不完整/)})
+
+test('v2 geographic image and photo positions are fixed configuration, not implicit geocoding',()=>{assert.equal(journey.id,'china-scrapbook');assert.equal(journey.version,2);assert.equal(journey.height,1340);const map=journey.layers.find(l=>l.type==='image');assert.ok(map&&map.type==='image'&&map.assetId==='china-static-gs20162923');const work=createWork(journey);assert.equal(work.dataVersion,2);assert.equal(work.text.name,'Traveler');assert.equal(work.captions.p1.date,'')})
+
+test('v2 photo box is shared by rendering and pan mapping',()=>{const slot=journey.layers.find(l=>l.type==='photo');assert.ok(slot&&slot.type==='photo');assert.deepEqual(photoBox(slot),{x:7,y:7,width:98,height:95});const t=structuredClone(journey);const bad=t.layers.find(l=>l.type==='photo');if(bad&&bad.type==='photo')bad.padding=500;assert.throws(()=>validateTemplate(t),/照片区域无效/)})

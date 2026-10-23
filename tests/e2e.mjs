@@ -8,14 +8,14 @@ const browser=await chromium.launch({executablePath,headless:true,args:['--no-sa
 const page=await browser.newPage({viewport:{width:1440,height:1100}})
 const errors=[],network=[],checks=[]
 page.on('pageerror',e=>errors.push(e.message))
-page.on('request',r=>network.push({url:r.url(),method:r.method(),type:r.resourceType()}))
+page.on('request',r=>network.push({url:r.url().startsWith('data:')?r.url().slice(0,35)+'[embedded asset]':r.url(),method:r.method(),type:r.resourceType()}))
 const check=(name,details={})=>{checks.push({name,status:'passed',...details});console.log('PASS',name)}
 const closeNotice=async()=>{const n=page.locator('.notice .text-button');if(await n.count())await n.click()}
 const choose=async(index,path)=>{await closeNotice();const event=page.waitForEvent('filechooser');await page.locator('.photo-picker').nth(index).click();await(await event).setFiles(path);await page.waitForFunction(()=>!document.querySelector('.export-button').hasAttribute('disabled'));await page.waitForTimeout(120)}
 const exportImage=async()=>{await closeNotice();await page.locator('.export-button').click();await page.locator('.result-modal').waitFor();await page.waitForTimeout(180)}
 const closeResult=async()=>{await page.locator('.result-heading .text-button').click();await page.locator('.result-modal').waitFor({state:'hidden'})}
 try{
- await page.goto(process.env.BASE_URL||'http://127.0.0.1:4173');await page.locator('canvas').waitFor();await page.waitForTimeout(400)
+ await page.goto(process.env.BASE_URL||'http://127.0.0.1:4180');await page.locator('canvas').waitFor();await page.waitForTimeout(400)
  check('initial render with 4 empty slots and empty date');assert.equal(await page.locator('.photo-picker').count(),4)
  assert.equal(await page.locator('.field input').nth(2).inputValue(),'')
  await page.screenshot({path:`${out}/desktop-empty.png`,fullPage:true})
@@ -56,20 +56,20 @@ try{
  check('all 4 photo slots can be independently cropped')
  for(const name of ['落日陶土','海盐蓝','鼠尾草']){await page.locator('.palette').filter({hasText:name}).click();assert.equal(await page.locator('.photo-thumb').count(),4);assert.equal(await page.locator('.field input').first().inputValue(),'山海之间，沿途有你')}
  check('3 palettes preserve photo and text data')
- await closeNotice();await page.screenshot({path:`${out}/desktop-edited.png`,fullPage:true})
+ await closeNotice();await page.evaluate(()=>window.scrollTo(0,0));await page.waitForTimeout(100);await page.screenshot({path:`${out}/desktop-edited.png`,fullPage:true})
  await exportImage()
  const image=page.locator('.result-image img');await image.waitFor()
  const src=await image.getAttribute('src')
  const data=await page.evaluate(async url=>Array.from(new Uint8Array(await(await fetch(url)).arrayBuffer())),src)
- await writeFile(`${out}/poster-1500x2100.jpg`,Buffer.from(data))
+ await writeFile(`${out}/poster-1500x2010.jpg`,Buffer.from(data))
  const comparison=await page.evaluate(async()=>{
-  const original=document.querySelector('#preview-host canvas'),img=document.querySelector('.result-image img');await img.decode();const c=document.createElement('canvas');c.width=600;c.height=840;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,600,840);const a=ctx.getImageData(0,0,600,840).data,b=original.getContext('2d').getImageData(0,0,600,840).data;let sum=0;for(let i=0;i<a.length;i+=4)for(let j=0;j<3;j++)sum+=Math.abs(a[i+j]-b[i+j]);return{width:img.naturalWidth,height:img.naturalHeight,meanAbsoluteRGBError:sum/(600*840*3)}
+  const original=document.querySelector('#preview-host canvas'),img=document.querySelector('.result-image img');await img.decode();const c=document.createElement('canvas');c.width=original.width;c.height=original.height;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);const a=ctx.getImageData(0,0,c.width,c.height).data,b=original.getContext('2d').getImageData(0,0,c.width,c.height).data;let sum=0;for(let i=0;i<a.length;i+=4)for(let j=0;j<3;j++)sum+=Math.abs(a[i+j]-b[i+j]);return{width:img.naturalWidth,height:img.naturalHeight,meanAbsoluteRGBError:sum/(c.width*c.height*3)}
  })
- assert.equal(comparison.width,1500);assert.equal(comparison.height,2100);assert.ok(comparison.meanAbsoluteRGBError<8)
- check('1500 × 2100 JPEG and preview/export consistency',comparison)
+ assert.equal(comparison.width,1500);assert.equal(comparison.height,2010);assert.ok(comparison.meanAbsoluteRGBError<8)
+ check('1500 × 2010 JPEG and preview/export consistency',comparison)
  const download=page.waitForEvent('download');await page.locator('.result-modal .primary').click();await(await download).saveAs(`${out}/downloaded-poster.jpg`);check('desktop download')
  await closeResult()
- await page.locator('.resolution uni-button').nth(1).click();await exportImage();assert.match(await page.locator('.result-heading').innerText(),/1000 × 1400/);await closeResult();check('lower-resolution 1000 × 1400 export')
+ await page.locator('.resolution uni-button').nth(1).click();await exportImage();assert.match(await page.locator('.result-heading').innerText(),/1000 × 1340/);await closeResult();check('lower-resolution 1000 × 1340 export')
  const title=page.locator('.field input').first();await title.fill('山'.repeat(26)+'👩‍👩‍👧‍👦');await page.waitForFunction(()=>document.querySelector('.field input').value.length===24);assert.equal(Array.from(await title.inputValue()).length,24);await title.fill('VeryLongEnglishTitleText');await exportImage();await closeResult();await title.fill('沿途有你👩‍👩‍👧‍👦');check('Chinese, long English, emoji, and text length boundaries')
  await closeNotice();await page.locator('.photo-actions').nth(1).locator('uni-button').nth(1).click();assert.equal(await page.locator('.photo-thumb').count(),3);await choose(1,paths[1]);await choose(0,paths[3]);await choose(0,paths[0]);assert.equal(await page.locator('.photo-thumb').count(),4);check('remove, reselect, sequential rapid replacement do not clear other slots')
  await writeFile(`${out}/invalid.heic`,Buffer.alloc(30));await choose(0,`${out}/invalid.heic`);assert.match(await page.locator('.notice').innerText(),/HEIC/);assert.equal(await page.locator('.photo-thumb').count(),4)
@@ -92,13 +92,23 @@ try{
  await page.locator('.resolution uni-button').first().click();const baseline=await metrics()
  for(let i=0;i<10;i++){await choose(i%4,paths[i%4]);await exportImage();await closeResult()}
  const after=await metrics();check('10 photo-replace/export/close cycles completed; sampled Chromium metrics',{baseline,after,limitation:'JS heap/DOM sample only; not a mobile native bitmap-memory or long-running leak proof'})
- await page.setViewportSize({width:390,height:844});await closeNotice();await page.locator('.photo-actions').first().locator('uni-button').first().click();await page.locator('.crop-panel').waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=390),true);await page.screenshot({path:`${out}/mobile-crop.png`,fullPage:true});await page.locator('.crop-heading .text-button').click();await exportImage();await page.screenshot({path:`${out}/mobile-export.png`,fullPage:true});await closeResult();check('390px narrow-screen crop and export without horizontal overflow')
+ await page.setViewportSize({width:390,height:844});await closeNotice();await page.locator('.photo-actions').first().locator('uni-button').first().click();await page.locator('.crop-panel').waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=390),true);await page.screenshot({path:`${out}/mobile-crop.png`,fullPage:true});await page.locator('.crop-heading .text-button').click();await exportImage();await page.screenshot({path:`${out}/mobile-export.png`,fullPage:true});await page.screenshot({path:`${out}/mobile-export-viewport.png`});await closeResult();check('390px narrow-screen crop and export without horizontal overflow')
  // Confirm reset, then empty-slot export cancellation and explicit approval.
  await closeNotice();await page.locator('.panel-heading .text-button').click();await page.getByText('取消',{exact:true}).last().click();assert.equal(await page.locator('.photo-thumb').count(),4)
- await page.locator('.panel-heading .text-button').click();await page.getByText('确认',{exact:true}).last().click();assert.equal(await page.locator('.photo-thumb').count(),0);await page.waitForFunction(()=>document.querySelector('.field input').value==='我的旅行手账');assert.equal(await page.locator('.field input').first().inputValue(),'我的旅行手账');await closeNotice()
+ await page.locator('.panel-heading .text-button').click();await page.getByText('确认',{exact:true}).last().click();assert.equal(await page.locator('.photo-thumb').count(),0);await page.waitForFunction(()=>document.querySelector('.field input').value==='My Travel Map');assert.equal(await page.locator('.field input').first().inputValue(),'My Travel Map');await closeNotice()
  await page.locator('.export-button').click();await page.getByText('取消',{exact:true}).last().click();assert.equal(await page.locator('.result-modal').count(),0)
  await page.locator('.export-button').click();await page.getByText('确认',{exact:true}).last().click();await page.locator('.result-modal').waitFor();await closeResult();check('reset confirmation and empty-slot export cancel / confirm')
- const external=network.filter(r=>/^https?:/.test(r.url)&&!r.url.startsWith('http://127.0.0.1:4173')&&!r.url.startsWith(process.env.BASE_URL||'http://127.0.0.1:4173'))
+ await page.locator('.load-example').click();await page.waitForFunction(()=>document.querySelectorAll('.photo-thumb').length===4);assert.match(await page.locator('.example-notice').innerText(),/4 张 AI 示例/);for(const img of await page.locator('.photo-thumb img').all())assert.ok(await img.evaluate(async e=>{await e.decode();return e.naturalWidth>0}));check('explicit demo loading labels all sample photos')
+ await closeNotice();await page.locator('.export-button').click();await page.getByText('取消',{exact:true}).last().click();assert.equal(await page.locator('.result-modal').count(),0);check('demo export requires explicit confirmation')
+ await choose(0,paths[0]);assert.match(await page.locator('.example-notice').innerText(),/3 张 AI 示例/);await page.locator('.caption-edit input').first().fill('我的照片');await page.locator('.palette').filter({hasText:'海盐蓝'}).click();assert.equal(await page.locator('.caption-edit input').first().inputValue(),'我的照片');check('replacing demo photo removes only its example flag and captions persist')
+ await closeNotice();await page.locator('.clear-photos').click();await page.getByText('确认',{exact:true}).last().click();await page.waitForFunction(()=>document.querySelectorAll('.photo-thumb').length===0)
+ await page.locator('.details-toggle').click();await page.locator('.field input').nth(3).fill('Jayden');await page.locator('.field input').nth(4).fill('我的旅途札记');await page.locator('.field input').nth(5).fill('下一站去看海');assert.equal(await page.locator('.field input').nth(3).inputValue(),'Jayden');check('nickname, notes and wish fields are editable')
+ await closeNotice();await page.locator('.load-example').click();await page.waitForFunction(()=>document.querySelectorAll('.photo-thumb').length===4);await closeNotice();await page.locator('.clear-photos').click();await page.waitForFunction(()=>document.querySelectorAll('.photo-thumb').length===0);assert.equal(await page.locator('.field input').nth(3).inputValue(),'Jayden');check('one-click clear of all-demo photos retains edited text and map assets')
+ // Force a template image decode failure on a fresh page; then retry with the original asset source.
+ const assetFailure=await browser.newPage()
+ await assetFailure.addInitScript(()=>{window.__failAsset=true;const d=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');Object.defineProperty(HTMLImageElement.prototype,'src',{configurable:true,get:d.get,set(value){if(window.__failAsset&&String(value).startsWith('data:image/')){window.__failAsset=false;d.set.call(this,'data:image/png;base64,broken')}else d.set.call(this,value)}})})
+ await assetFailure.goto(process.env.BASE_URL||'http://127.0.0.1:4180');await assetFailure.getByText('重新准备画布',{exact:true}).waitFor();await assetFailure.getByText('重新准备画布',{exact:true}).click();await assetFailure.waitForFunction(()=>!document.querySelector('.load-example').hasAttribute('disabled'));assert.equal(await assetFailure.locator('canvas').count(),1);await assetFailure.close();check('template image failure shows retry and recovers with a single preview canvas')
+ const external=network.filter(r=>/^https?:/.test(r.url)&&!r.url.startsWith('http://127.0.0.1:4180')&&!r.url.startsWith(process.env.BASE_URL||'http://127.0.0.1:4180'))
  const postRequests=network.filter(r=>r.method!=='GET');assert.deepEqual(external,[]);assert.deepEqual(postRequests,[]);assert.deepEqual(errors,[]);check('no external requests, photo uploads, or runtime page errors in this test',{external,postRequests,requestCount:network.length})
  await writeFile(`${out}/e2e-results.json`,JSON.stringify({browser:await browser.version(),checks,network,errors},null,2));console.log(`ALL ${checks.length} CHECKS PASSED`)
 }catch(error){await page.screenshot({path:`${out}/failure.png`,fullPage:true});await writeFile(`${out}/e2e-results.json`,JSON.stringify({checks,error:String(error),errors,network},null,2));console.error(error);process.exitCode=1}finally{await browser.close()}

@@ -17,6 +17,17 @@ export function createWeixinPlatform():Platform {
     resolve({ctx,width,height,native:node,destroy(){node.width=1;node.height=1}})
    })
   })},
+  async loadAsset(target,id,source){
+   const parts=source.match(/^data:image\/(png|jpeg);base64,(.+)$/)
+   if(!parts)throw new Error('模板素材格式无效')
+   const path=`${wx.env.USER_DATA_PATH}/traval-${id}-${Date.now()}-${Math.random().toString(36).slice(2)}.${parts[1]==='png'?'png':'jpg'}`
+   await new Promise<void>((resolve,reject)=>wx.getFileSystemManager().writeFile({filePath:path,data:parts[2],encoding:'base64',success:()=>resolve(),fail:()=>reject(new Error('模板素材写入失败，请检查设备空间'))}))
+   try{
+    const img=(target.native as any).createImage()
+    await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject(new Error('模板素材加载失败，请重试'));img.src=path})
+    return {id,source:img,width:img.width,height:img.height,thumbnail:path,dispose:track(()=>{img.src='';cleanupFile(path)})}
+   }catch(e){cleanupFile(path);throw e}
+  },
   async choosePhoto(target){
    const picked:any=await new Promise((resolve,reject)=>uni.chooseImage({count:1,sizeType:['original'],sourceType:['album','camera'],success:resolve,fail:(e:any)=>/cancel/.test(e.errMsg)?resolve(null):reject(new Error('选图失败，请重试'))}))
    if(!picked)return null

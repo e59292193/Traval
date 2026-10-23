@@ -1,0 +1,354 @@
+{
+  "browser": "153.0.8010.12",
+  "checks": [
+    {
+      "name": "initial render with 4 empty slots and empty date",
+      "status": "passed"
+    },
+    {
+      "name": "4 different aspect ratios, JPEG PNG and WebP decode",
+      "status": "passed"
+    },
+    {
+      "name": "independent zoom / pan sliders and pointer drag",
+      "status": "passed"
+    },
+    {
+      "name": "all 4 photo slots can be independently cropped",
+      "status": "passed"
+    },
+    {
+      "name": "3 palettes preserve photo and text data",
+      "status": "passed"
+    },
+    {
+      "name": "1500 × 2010 JPEG and preview/export consistency",
+      "status": "passed",
+      "width": 1500,
+      "height": 2010,
+      "meanAbsoluteRGBError": 3.6213724586941836
+    },
+    {
+      "name": "desktop download",
+      "status": "passed"
+    },
+    {
+      "name": "lower-resolution 1000 × 1340 export",
+      "status": "passed"
+    },
+    {
+      "name": "Chinese, long English, emoji, and text length boundaries",
+      "status": "passed"
+    },
+    {
+      "name": "remove, reselect, sequential rapid replacement do not clear other slots",
+      "status": "passed"
+    },
+    {
+      "name": "unsupported format / file-size / pixel limit / decode failure preserve work and recover",
+      "status": "passed"
+    },
+    {
+      "name": "cancel file selection keeps current photos",
+      "status": "passed"
+    },
+    {
+      "name": "EXIF orientation 6 applied once in Chromium",
+      "status": "passed",
+      "width": 180,
+      "height": 320
+    },
+    {
+      "name": "forced export failure recovers and retains work",
+      "status": "passed"
+    },
+    {
+      "name": "forced font readiness failure uses system fallback with visible warning",
+      "status": "passed"
+    },
+    {
+      "name": "10 photo-replace/export/close cycles completed; sampled Chromium metrics",
+      "status": "passed",
+      "baseline": {
+        "jsHeapUsed": 6147300,
+        "documents": 1,
+        "nodes": 1167,
+        "jsEventListeners": 489
+      },
+      "after": {
+        "jsHeapUsed": 6329496,
+        "documents": 1,
+        "nodes": 1316,
+        "jsEventListeners": 524
+      },
+      "limitation": "JS heap/DOM sample only; not a mobile native bitmap-memory or long-running leak proof"
+    },
+    {
+      "name": "390px narrow-screen crop and export without horizontal overflow",
+      "status": "passed"
+    },
+    {
+      "name": "reset confirmation and empty-slot export cancel / confirm",
+      "status": "passed"
+    },
+    {
+      "name": "explicit demo loading labels all sample photos",
+      "status": "passed"
+    },
+    {
+      "name": "demo export requires explicit confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "replacing demo photo removes only its example flag and captions persist",
+      "status": "passed"
+    },
+    {
+      "name": "nickname, notes and wish fields are editable",
+      "status": "passed"
+    },
+    {
+      "name": "one-click clear of all-demo photos retains edited text and map assets",
+      "status": "passed"
+    },
+    {
+      "name": "template image failure shows retry and recovers with a single preview canvas",
+      "status": "passed"
+    },
+    {
+      "name": "no external requests, photo uploads, or runtime page errors in this test",
+      "status": "passed",
+      "external": [],
+      "postRequests": [],
+      "requestCount": 45
+    }
+  ],
+  "network": [
+    {
+      "url": "http://127.0.0.1:4180/",
+      "method": "GET",
+      "type": "document"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/uni.79839a7a.css",
+      "method": "GET",
+      "type": "stylesheet"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/index-BrK8jPlB.js",
+      "method": "GET",
+      "type": "script"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/index-DKPkwkei.css",
+      "method": "GET",
+      "type": "stylesheet"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/pages-index-index.BpYCrLIX.js",
+      "method": "GET",
+      "type": "script"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/index-CHiCVs1e.css",
+      "method": "GET",
+      "type": "stylesheet"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/38e07130-8641-4815-89d8-44cd33b2a269",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/0a0000b9-8c70-43f2-92d7-bfbb05065a4b",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/78266e1f-38a4-40bb-a9c6-2859eba55d38",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/54702aa1-dca5-4483-81df-39194407ffbc",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/74a8c433-d274-418f-88eb-81f7846c848d",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/74a8c433-d274-418f-88eb-81f7846c848d",
+      "method": "GET",
+      "type": "fetch"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/62eb235f-066d-4409-a32b-0d7b7a580e37",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/16623614-44ec-4695-adfa-06e0f6b3392e",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/bc38f800-edcd-47e9-92ff-8c97bc2a6875",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/bf238a26-aee7-47db-9d12-3b06bbc63cf3",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/825e4420-e894-44ec-8904-53ddbfe9b3b3",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/08c7e297-d59f-4819-afb2-3723395e767d",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/344307d3-84a2-4952-9a70-5fce3e8d1655",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/3db1c8d4-8a6a-4c83-8050-83e6681e6add",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/6cc9f041-a0bb-486b-93c3-2f4ebc39c807",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/cafa42ff-308a-4b49-8118-74aaf8461504",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/d530e31b-6ca7-475e-801b-a4231725aa99",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/cc3b60b3-1d56-4e0a-ad09-c6842eb38355",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/b01f5d62-0bb1-439d-89e8-5b58e8721eaf",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/b9a70db3-a603-45aa-b8b7-4bbb519efaeb",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/658aaa3c-fc82-4763-96d9-676a288663b4",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/cf261b64-6a6c-41d9-96e9-3c031fcdbeaf",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/f91803aa-fc86-4338-babb-f112a4c681ec",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/d9eb0d9e-0ea4-481e-820a-a1e950794f76",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/e2547d5b-5ff2-4234-b0a8-0d4df9f93830",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/67bd1ed2-dcfb-4e4f-8982-a2a67e5d4c77",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/8a814562-3dfc-4c41-bf71-0b909656394b",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/1c39c8d6-ed35-4d79-b255-7e54ae14a082",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/8d78dd64-0569-4201-8a42-531ba6455f73",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/fb59ec33-7fd6-4289-ae42-eafdc4b3c104",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/1b378a97-6cc0-48e8-92ad-16499756850c",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/e2cbbd4e-dc57-47cb-8ed5-0b75e98645dc",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/a6170e7e-63b0-465b-876b-ba918550fa97",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/44419aaa-05fc-4071-9e15-0cc463edd7ae",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/2049ab32-0d95-4960-81c0-adf1f52b61d9",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/8b7ca505-280a-4c42-a07d-87ae8bc51afb",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/f9baf383-115d-4e4d-922c-6dddba9c739d",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/3b971bc6-8356-44f6-ad33-0c70e47cc571",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/b7943961-bc40-433e-ba5b-517cb08f278f",
+      "method": "GET",
+      "type": "image"
+    }
+  ],
+  "errors": []
+}
