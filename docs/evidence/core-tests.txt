@@ -1,0 +1,28 @@
+
+> traval-journal@0.1.0 test
+> tsx --test tests/*.test.ts
+
+✔ cover preserves aspect and fills landscape / portrait / square / panoramic (2.10213ms)
+✔ normalized source crop is independent of render scale (0.291133ms)
+✔ large drags cannot expose blank edges (0.330796ms)
+✔ pan axis without overflow stays stable (0.252035ms)
+✔ invalid values are clamped (1.250851ms)
+✔ invalid image sizes fail explicitly (0.415036ms)
+✔ grapheme limits preserve family emoji and accents (19.094627ms)
+✔ Chinese and long English wrap without whitespace (0.647766ms)
+✔ explicit newlines are preserved (0.362086ms)
+✔ overflow adds ellipsis at minimum font size (1.934633ms)
+✔ valid serializable template / separate work (0.98313ms)
+✔ duplicate IDs / bindings / palette fail validation (0.762575ms)
+✔ PNG dimensions detected before decoding (0.547149ms)
+✔ huge PNG rejected before decoding (0.542867ms)
+✔ JPEG and WebP header parsing (0.28411ms)
+✔ HEIC and truncated files rejected (0.28593ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 289.69899
