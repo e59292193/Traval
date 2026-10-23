@@ -12,4 +12,4 @@ export function validateTemplate(t:Template){
  }
  if(bindings.size!==4)throw new Error('首版模板需要四个照片槽位')
 }
-export function createWork(t:Template):Work {return {dataVersion:2,templateId:t.id,templateVersion:t.version,paletteId:t.defaultPalette,text:{title:'My Travel Map',subtitle:'去更远的地方，收藏世界的美好。',date:'',name:'Traveler',wish:'下一站，继续出发',note:'慢慢走，认真看。把喜欢的风景，收进这一页回忆。'},captions:Object.fromEntries(['出发','沿途','片刻','收藏'].map((label,i)=>['p'+(i+1),{label,date:''}])),photos:Object.fromEntries(t.layers.filter(l=>l.type==='photo').map(l=>[(l as Extract<Layer,{type:'photo'}>).binding,null]))}}
+export function createWork(t:Template):Work {return {magnets:[],dataVersion:2,templateId:t.id,templateVersion:t.version,paletteId:t.defaultPalette,text:{title:'My Travel Map',subtitle:'去更远的地方，收藏世界的美好。',date:'',name:'Traveler',wish:'下一站，继续出发',note:'慢慢走，认真看。把喜欢的风景，收进这一页回忆。'},captions:Object.fromEntries(['出发','沿途','片刻','收藏'].map((label,i)=>['p'+(i+1),{label,date:''}])),photos:Object.fromEntries(t.layers.filter(l=>l.type==='photo').map(l=>[(l as Extract<Layer,{type:'photo'}>).binding,null]))}}

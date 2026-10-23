@@ -1,0 +1,55 @@
+
+> traval-journal@0.4.2 test
+> tsx --test tests/*.test.ts
+
+✔ cover preserves aspect and fills landscape / portrait / square / panoramic (2.633912ms)
+✔ normalized source crop is independent of render scale (0.275916ms)
+✔ large drags cannot expose blank edges (0.261682ms)
+✔ pan axis without overflow stays stable (0.202321ms)
+✔ invalid values are clamped (0.997527ms)
+✔ invalid image sizes fail explicitly (0.573361ms)
+✔ grapheme limits preserve family emoji and accents (16.16115ms)
+✔ Chinese and long English wrap without whitespace (0.637194ms)
+✔ explicit newlines are preserved (1.63778ms)
+✔ overflow adds ellipsis at minimum font size (3.446015ms)
+✔ valid serializable template / separate work (1.296729ms)
+✔ duplicate IDs / bindings / palette fail validation (1.685958ms)
+✔ PNG dimensions detected before decoding (0.50358ms)
+✔ huge PNG rejected before decoding (0.442683ms)
+✔ JPEG and WebP header parsing (0.838839ms)
+✔ HEIC and truncated files rejected (0.250835ms)
+✔ v2 geographic image and photo positions are fixed configuration, not implicit geocoding (0.263976ms)
+✔ v2 photo box is shared by rendering and pan mapping (0.513633ms)
+✔ draft validates complete empty work and current schema (21.248208ms)
+✔ draft requires every binding to have an actual supported image Blob (1.408472ms)
+✔ invalid work version and overlength text cannot overwrite current edit (0.810527ms)
+✔ archived trip photo survives without a current handout binding, and missing archive is rejected (3.450249ms)
+✔ new work has independent empty magnet collection (3.718937ms)
+✔ old drafts migrate without losing text and photo bindings (24.323051ms)
+✔ magnet-only image reference survives validated draft (5.559245ms)
+✔ reject invalid styles, duplicate IDs and more than eight (3.370794ms)
+✔ reject NaN, out-of-range and missing crops (0.593448ms)
+✔ round and ceramic use original source, square crop and bounded rim (6.43902ms)
+✔ Taiwan name override is exact and does not rename strait or cities (12.45774ms)
+✔ region overlay includes all 34 IDs with unique Taiwan province name (1.644859ms)
+✔ manual highlights toggle without inventing city stops or blocking cancellation (1.585118ms)
+✔ recorded regions cannot silently gain manual pins and trip filtering is consistent (4.517885ms)
+✔ worker features can structuredClone Vue reactive input and never retain mutable coordinates (5.345117ms)
+✔ same-coordinate consecutive visits retain records but generate no invisible route (2.570052ms)
+✔ empty travel has no invented city/trip/region counts (2.490371ms)
+✔ stats deduplicate cities and merge manually visited regions (0.509081ms)
+✔ routes never connect different trips and follow list order (0.635903ms)
+✔ valid calendar date checks include leap years (3.082185ms)
+✔ travel schema roundtrips, rejects unknown coordinates, duplicate ids and bad dates (1.911578ms)
+✔ legacy coordinates migrate without relabeling or deleting records (0.621214ms)
+✔ unverified middle stop cannot be skipped to connect a false route (0.603244ms)
+✔ map export extent handles empty, single, identical and selected trip points (0.731781ms)
+✔ schema rejects invalid coordinate systems, export scopes and original coords (1.55524ms)
+ℹ tests 43
+ℹ suites 0
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2772.552067

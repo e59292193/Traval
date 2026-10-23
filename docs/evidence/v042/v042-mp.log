@@ -1,0 +1,8 @@
+
+> traval-journal@0.4.2 build:mp-weixin
+> uni build -p mp-weixin
+
+Compiler version: 5.26（vue3）
+Compiling...
+DONE  Build complete.
+Run method: open Weixin Mini Program Devtools, import dist/build/mp-weixin run.

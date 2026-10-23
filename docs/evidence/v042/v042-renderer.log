@@ -1,0 +1,11 @@
+PASS real MapLibre renderer and all footprint sources initialized
+PASS actual map click lights and unlights Sichuan without adding city stops
+PASS reactive trip data reaches Worker and creates three markers and two route segments
+PASS route off/on and stop reorder update actual Worker source rather than only UI state
+PASS all trips do not cross-connect and one-stop trip clears prior trip routes
+PASS rapid route switches converge to latest state with manual and trip highlights combined
+PASS point-picking takes precedence over footprint and province clicks
+PASS Taiwan feature is present under the shared 台湾省 label expression
+PASS cached high-resolution export awaits Worker updates and removes hidden routes
+PASS region-only changes invalidate export cache; national export includes highlights
+PASS renderer remains usable at 390px with no horizontal overflow

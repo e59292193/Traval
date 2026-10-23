@@ -1,3 +1,4 @@
+import {drawMagnet} from './magnet'
 import {travelStats,visibleTrips,type Journal} from '../core/travel'
 import type {DrawContext,Template,Work,Photo,Palette} from '../types'
 import {cropRect} from '../core/crop'
@@ -66,8 +67,8 @@ function scene(c:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,asset
  sticker(c,assets,2,365,756,63)
  label(c,hasTrips?'本页照片':'最近回忆',455,724,25,p.ink,HAND,'600');label(c,'♡',591,716,31,'#c58d55',HAND)
  for(let i=0;i<4;i++)photo(c,{id:'memory-'+i,type:'photo',binding:'p'+(i+1),caption:'片刻',x:457+i*122,y:777+(i%2)*5,width:109,height:129,rotation:[-5,4,-3,6][i],opacity:1,radius:2,padding:6,captionHeight:39,captionSize:12},work,photos,p,true)
- label(c,'我的冰箱贴',48,949,25,p.ink,HAND,'600');label(c,'旅行灵感',330,955,13,p.accent)
- for(let i=0;i<8;i++)sticker(c,assets,i,47+(i%4)*96,994+Math.floor(i/4)*78,78)
+ label(c,'我的冰箱贴',48,949,25,p.ink,HAND,'600');label(c,work.magnets?.length?'我的珍藏':'旅行灵感',330,955,13,p.accent)
+ for(let i=0;i<8;i++){const m=work.magnets?.[i],p=m&&photos.get(m.assetId),x=47+(i%4)*96,y=994+Math.floor(i/4)*78;if(m&&p)drawMagnet(c,m,p,x+6,y+3,64,[-5,4,-3,5,3,-4,4,-3][i]);else sticker(c,assets,i,x,y,78)}
  label(c,'旅行札记',470,951,24,p.ink,HAND,'600')
  paragraph(c,work.text.note,470,998,229,21,16,5,p.ink,HAND,1.5)
  c.strokeStyle=p.accent;c.lineWidth=1.3;c.setLineDash([4,5]);c.beginPath();c.moveTo(474,1140);c.bezierCurveTo(530,1110,620,1160,700,1126);c.stroke();c.setLineDash([])

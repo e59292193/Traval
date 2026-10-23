@@ -1,0 +1,20 @@
+PASS empty collection preserves decorative board
+PASS preview shortcut scrolls directly to magnet maker
+PASS upload creates local staged preview without modifying poster
+PASS pending preview is excluded from saved draft
+PASS cancel disposes staged upload and preserves poster
+PASS commit draws photo magnet in scrapbook board
+PASS cancel edit leaves committed style unchanged
+PASS save edit applies round badge style
+PASS reorder updates rendered board and persisted order
+PASS IndexedDB reload restores magnet-only source images and styles
+PASS clearing travel photo slots preserves magnets
+PASS invalid image upload leaves committed magnets intact
+PASS eight-magnet limit prevents overflow and retains exactly eight sources
+PASS 390px maker and eight-item collection have no page overflow
+PASS poster JPEG includes eight custom photo magnets at 1500x2010
+PASS lightweight JPEG exports magnets at 1000x1340
+PASS remove frees source image and reopens upload slot
+PASS loaded app can edit magnets and save local draft offline
+PASS reset clears current magnets but keeps saved draft
+PASS no uncaught errors or image-upload network requests

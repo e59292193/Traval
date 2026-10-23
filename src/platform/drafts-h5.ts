@@ -1,3 +1,4 @@
+import {validateMagnets} from '../core/magnets'
 import type {Work,Photo} from '../types'
 import {validateJournal,type Journal} from '../core/travel'
 import {journey} from '../templates/journey'
@@ -14,12 +15,13 @@ export function validateDraft(raw:unknown):Draft{
  const ids=new Set<string>();let bytes=0
  for(const p of d.photos){if(!p||typeof p.id!=='string'||ids.has(p.id)||!(p.blob instanceof Blob)||!['image/jpeg','image/png','image/webp'].includes(p.blob.type)||(bytes+=p.blob.size)>30*1024*1024)throw new Error('草稿照片无效或超过 30 MB 限制');ids.add(p.id)}
  for(const slot of ['p1','p2','p3','p4']){const b=w.photos[slot],c=w.captions[slot];if(!c||typeof c.label!=='string'||c.label.length>40||typeof c.date!=='string'||c.date.length>40||b!==null&&(!b||!ids.has(b.assetId)||!b.crop||!Number.isFinite(b.crop.zoom)||b.crop.zoom<1||b.crop.zoom>3||!Number.isFinite(b.crop.x)||b.crop.x<0||b.crop.x>1||!Number.isFinite(b.crop.y)||b.crop.y<0||b.crop.y>1))throw new Error('草稿照片绑定或裁剪无效')}
+ w.magnets=validateMagnets(w.magnets,ids)
  d.journal=validateJournal(d.journal);for(const stop of d.journal.trips.flatMap(t=>t.stops))if(stop.photoId&&!ids.has(stop.photoId))throw new Error('草稿的旅行照片缺失，未覆盖当前编辑');return d
 }
 function validTimestamp(s:unknown){return typeof s==='string'&&Number.isFinite(Date.parse(s))}
 export async function saveDraft(work:Work,journal:Journal,photos:Map<string,Photo>){
  const snapshot=JSON.parse(JSON.stringify({work,journal})),encoded:DraftPhoto[]=[]
- const referenced=new Set([...Object.values(work.photos).flatMap(b=>b?[b.assetId]:[]),...journal.trips.flatMap(t=>t.stops.flatMap(s=>s.photoId?[s.photoId]:[]))])
+ const referenced=new Set([...Object.values(snapshot.work.photos as Work['photos']).flatMap(b=>b?[b.assetId]:[]),...(snapshot.journal as Journal).trips.flatMap(t=>t.stops.flatMap(s=>s.photoId?[s.photoId]:[])),...(snapshot.work.magnets||[]).map((m:{assetId:string})=>m.assetId)])
  for(const id of referenced){const p=photos.get(id);if(!p)throw new Error('照片尚未准备好，草稿未保存');const c=document.createElement('canvas');c.width=p.width;c.height=p.height;const ctx=c.getContext('2d');if(!ctx)throw new Error('保存草稿时内存不足');try{ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(p.source as CanvasImageSource,0,0);const blob=await new Promise<Blob>((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error('草稿照片编码失败')),'image/jpeg',.92));encoded.push({id:p.id,blob})}finally{c.width=c.height=1}}
  const draft=validateDraft({version:1,savedAt:new Date().toISOString(),...snapshot,photos:encoded});await operation('readwrite',s=>s.put(draft,KEY));return draft.savedAt
 }

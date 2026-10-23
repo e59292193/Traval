@@ -1,8 +1,12 @@
-> 当前版本 V0.4.1。早期静态地图说明仅适用于对应旧版本；以 [V0.4 说明](docs/TRAVEL-V0.4.md) 为准。
+> 当前版本 V0.4.2。早期静态地图说明仅适用于对应旧版本；以 [V0.4 说明](docs/TRAVEL-V0.4.md) 为准。
 
-# 沿途 · Traval — 足迹地图与旅行记录 V0.4.1
+# 沿途 · Traval — 照片冰箱贴与旅行手账 V0.4.2
 
 一个可实际编辑和导出图片的旅行手账海报 **H5 原型**。采用 uni-app / Vue 3 / TypeScript / Canvas 2D；不是静态效果图，也不是可直接商用上线的完整产品。
+
+## V0.4.2 照片冰箱贴
+
+上传图片 → 选择奶油方贴/圆形徽章 → 调整构图 → 加入“我的冰箱贴”区域。支持最多 8 枚、调整/排序/移除、随手账导出和 H5 本地草稿恢复。全部照片处理在本机进行；本版保留图片背景，是白边和立体质感效果，不是 AI 抠图/重绘。详见 [操作与兼容说明](docs/MAGNETS-V0.4.2.md)。
 
 ## V0.4.1 修复
 
@@ -79,6 +83,7 @@ npx playwright install chromium
 npm run test:e2e       # 原有照片编辑/异常回归
 npm run test:travel    # 旅行地图/草稿/导出闭环
 npm run test:map       # V0.3 草稿迁移/单点/网络失败与静态回退
+npm run test:magnets
 npm run test:map-fixes # 真实图层点亮、连线与标注修复专项
 ```
 

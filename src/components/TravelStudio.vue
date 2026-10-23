@@ -36,7 +36,7 @@
    <view class="travel-line"><button :disabled="busy" class="solid" @click="saveStop">{{ editingId?'保存地点修改':'添加地点' }}</button><button :disabled="busy" v-if="editingId" class="quiet" @click="cancelEdit">取消编辑</button><button :disabled="busy" class="quiet danger" @click="deleteTrip">删除本次旅行</button></view>
   </view>
   <view class="travel-divider"></view>
-  <view class="travel-subtitle">本地草稿</view><text class="travel-help">{{ draftStatus }}。手动保存整个手账、旅行记录和照片；不跨设备同步。浏览器清理数据后不可恢复，重要成品请另存。当前保留 {{ retainedPhotoCount }} / 32 张手账或历史关联照片，编码总量上限 30 MB；不是已实测的手机容量承诺。</text>
+  <view class="travel-subtitle">本地草稿</view><text class="travel-help">{{ draftStatus }}。手动保存整个手账、冰箱贴、旅行记录和照片；不跨设备同步。浏览器清理数据后不可恢复，重要成品请另存。当前保留 {{ retainedPhotoCount }} / 32 张照片或冰箱贴源图，编码总量上限 30 MB；不是已实测的手机容量承诺。</text>
   <view class="draft-actions"><button class="solid" :disabled="busy || (busy)" @click="$emit('save-draft')">保存本地草稿</button><button class="quiet" :disabled="busy || (busy)" @click="$emit('restore-draft')">恢复草稿</button><button class="quiet danger" :disabled="busy || (busy)" @click="$emit('clear-draft')">删除草稿</button></view>
   <text class="travel-warning">精细底图：OpenFreeMap / OpenMapTiles / OpenStreetMap；预设坐标：GeoNames（WGS84）。旧坐标未直接转换，预设地点也不等于测绘精度。中国地图内容、数据更新与最终公开发布要求仍需单独核实，旧静态图审图号不适用于新图。</text>
   <view v-if="hint" class="travel-feedback" role="status">{{ hint }}</view>

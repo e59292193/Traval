@@ -1,0 +1,6 @@
+PASS V0.3 draft restores with both unverified stops retained and excluded from precise map
+PASS editing a legacy custom note never silently relabels coordinates as WGS84
+PASS explicit migration adopts GeoNames WGS84 and preserves exact original coordinates
+PASS single-city map fits street-level view and native zoom controls remain 44px
+PASS national overview remains independent of selected trip extent
+PASS blocked map provider reports error and requires explicit consent for static JPEG fallback

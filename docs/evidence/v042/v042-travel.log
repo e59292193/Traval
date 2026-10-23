@@ -1,0 +1,24 @@
+PASS new map initializes with zero real travel statistics
+PASS create trip and two dated city stops with correct stats
+PASS actual app route switch updates model count off and on
+PASS invalid calendar date rejected without changing records
+PASS reorder and edit timeline stop
+PASS keyboard-accessible region selection updates visited stats
+PASS actual app manual region can be cancelled and lit again
+PASS MapLibre real basemap zoom buttons and trip bounds reset
+PASS map picking fills WGS84 coordinates and creates removable custom stop
+PASS national and current-trip poster extent selections
+PASS multiple trips and all-trip filter
+PASS real local photo slot linked to travel stop
+PASS replacing handout photo preserves the previously linked historical travel photo
+PASS IndexedDB reload/restore preserves trips, stops and actual photo Blob
+PASS accessible footprint inspection shows date, note and associated photo
+PASS selected trip loads its archived photos, dates and title into handout without deleting travel records
+PASS static-map fallback and footprint-map composition can be switched interactively
+PASS simulated storage quota failure keeps current work intact
+PASS incompatible persisted draft is rejected before current photos or records are replaced
+PASS interactive-map scrapbook exports full 1500x2010 JPEG
+PASS loaded app edits palette and saves draft without network
+PASS 390px mobile layout without horizontal overflow
+PASS delete persisted draft keeps current edit
+PASS no uncaught exceptions; external requests only to disclosed map tile/font provider; no user-photo uploads
