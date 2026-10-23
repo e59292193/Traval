@@ -1,7 +1,8 @@
+import type {CutoutRecipe} from '../core/sticker'
 export interface Crop { zoom:number; x:number; y:number }
 export type Field = 'title'|'subtitle'|'date'|'name'|'wish'|'note'
 export interface Photo { id:string; source:unknown; width:number; height:number; thumbnail:string; dispose:()=>void }
-export interface Magnet { id:string;assetId:string;style:'ceramic'|'round';crop:Crop }
+export interface Magnet { id:string;assetId:string;style:'ceramic'|'round'|'cutout';crop:Crop;sourceAssetId?:string;cutout?:CutoutRecipe }
 export interface Work { magnets:Magnet[]; dataVersion:2; templateId:string; templateVersion:number; paletteId:string; text:Record<Field,string>; captions:Record<string,{label:string;date:string}>; photos:Record<string,{assetId:string;crop:Crop;example?:boolean}|null> }
 export interface Palette {id:string; name:string; paper:string; ink:string; accent:string; soft:string; tape:string}
 export interface BaseLayer {id:string; x:number;y:number;width:number;height:number;rotation:number;opacity:number}

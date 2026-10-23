@@ -7,7 +7,7 @@ export function createH5Platform():Platform {
  let handFontReady=false
  function track(fn:()=>void){cleanup.add(fn);return ()=>{if(cleanup.delete(fn))fn()}}
  const blobURL=(blob:Blob)=>{const url=URL.createObjectURL(blob);return {url,dispose:track(()=>URL.revokeObjectURL(url))}}
- async function blob(canvas:HTMLCanvasElement):Promise<Blob>{return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('图片生成失败，请降低分辨率后重试')),'image/jpeg',.94))}
+ async function blob(canvas:HTMLCanvasElement,type='image/jpeg'):Promise<Blob>{return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('图片生成失败，请降低分辨率后重试')),type,.94))}
  async function image(url:string){const img=new Image();img.src=url;await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject(new Error('图片解码失败，请换一张照片'))});return img}
  function pick():Promise<File|null>{return new Promise(resolve=>{
   const input=document.createElement('input');input.type='file';input.accept='image/jpeg,image/png,image/webp';input.style.display='none';document.body.appendChild(input)
@@ -44,7 +44,7 @@ export function createH5Platform():Platform {
     try{
      const decoded=await image(raw.url);const ratio=Math.min(1,bitmapLimit/Math.max(decoded.naturalWidth,decoded.naturalHeight));const small=document.createElement('canvas')
      small.width=Math.max(1,Math.round(decoded.naturalWidth*ratio));small.height=Math.max(1,Math.round(decoded.naturalHeight*ratio));const ctx=small.getContext('2d');if(!ctx)throw new Error('图片解码内存不足');ctx.drawImage(decoded,0,0,small.width,small.height)
-     const resized=blobURL(await blob(small));small.width=small.height=1
+     const resized=blobURL(await blob(small,header.format==='jpeg'?'image/jpeg':'image/png'));small.width=small.height=1
      try{source=await image(resized.url);release=resized.dispose}catch(e){resized.dispose();throw e}
     }finally{raw.dispose()}
    }
@@ -52,7 +52,7 @@ export function createH5Platform():Platform {
    const thumb=document.createElement('canvas');thumb.width=180;thumb.height=Math.max(1,Math.round(height/width*180));const tc=thumb.getContext('2d')
    if(!tc){release();throw new Error('缩略图生成失败，请释放设备内存后重试')}
    let mini:ReturnType<typeof blobURL>
-   try{tc.fillStyle='#fff';tc.fillRect(0,0,thumb.width,thumb.height);tc.drawImage(source,0,0,thumb.width,thumb.height);mini=blobURL(await blob(thumb))}catch(e){release();throw e}finally{thumb.width=thumb.height=1}
+   try{if(header.format==='jpeg'){tc.fillStyle='#fff';tc.fillRect(0,0,thumb.width,thumb.height)}tc.drawImage(source,0,0,thumb.width,thumb.height);mini=blobURL(await blob(thumb,header.format==='jpeg'?'image/jpeg':'image/png'))}catch(e){release();throw e}finally{thumb.width=thumb.height=1}
    const dispose=track(()=>{release();mini.dispose()})
    return {id:`photo-${Date.now()}-${Math.random().toString(36).slice(2)}`,source,width,height,thumbnail:mini.url,dispose} satisfies Photo
   },

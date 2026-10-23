@@ -1,0 +1,26 @@
+PASS initial render with 4 empty slots and empty date
+PASS 4 different aspect ratios, JPEG PNG and WebP decode
+PASS independent zoom / pan sliders and pointer drag
+PASS all 4 photo slots can be independently cropped
+PASS 3 palettes preserve photo and text data
+PASS 1500 × 2010 JPEG and preview/export consistency
+PASS desktop download
+PASS lower-resolution 1000 × 1340 export
+PASS Chinese, long English, emoji, and text length boundaries
+PASS remove, reselect, sequential rapid replacement do not clear other slots
+PASS unsupported format / file-size / pixel limit / decode failure preserve work and recover
+PASS cancel file selection keeps current photos
+PASS EXIF orientation 6 applied once in Chromium
+PASS forced export failure recovers and retains work
+PASS forced font readiness failure uses system fallback with visible warning
+PASS 10 photo-replace/export/close cycles completed; sampled Chromium metrics
+PASS 390px narrow-screen crop and export without horizontal overflow
+PASS reset confirmation and empty-slot export cancel / confirm
+PASS explicit demo loading labels all sample photos
+PASS demo export requires explicit confirmation
+PASS replacing demo photo removes only its example flag and captions persist
+PASS nickname, notes and wish fields are editable
+PASS one-click clear of all-demo photos retains edited text and map assets
+PASS template image failure shows retry and recovers with a single preview canvas
+PASS only disclosed map-provider external requests; no photo uploads or runtime page errors
+ALL 25 CHECKS PASSED

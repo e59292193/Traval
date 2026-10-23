@@ -1,18 +1,30 @@
 <template>
  <view class="magnet-studio">
   <view class="magnet-title"><view><text class="magnet-eyebrow">PHOTO SOUVENIRS</text><view class="magnet-heading">制作我的冰箱贴</view></view><text class="magnet-count">{{ magnets.length }} / {{ max }}</text></view>
-  <text class="magnet-helper">把喜欢的照片变成小小纪念品。白边、圆角与立体质感，留在手账的“我的冰箱贴”区域。</text>
+  <text class="magnet-helper">把喜欢的照片变成小小纪念品。按主体轮廓裁切、轻卡通化与异形白边，留在手账的“我的冰箱贴”区域。</text>
+  <!-- #ifdef MP-WEIXIN -->
+  <text class="magnet-helper">异形抠图目前仅在 H5 提供；小程序仅保留旧版照片贴和导出，尚未进行真机验证。</text>
+  <!-- #endif -->
   <button class="magnet-upload" :disabled="busy||!ready||!!draft||magnets.length>=max" @click="$emit('upload')">＋ 上传图片制作冰箱贴</button>
-  <text class="magnet-helper">JPEG / PNG / WebP · 单张不超过 15 MB · 本地处理，不上传。保留图片背景，不是 AI 抠图。</text>
+  <text class="magnet-helper">JPEG / PNG / WebP · 单张不超过 15 MB · 纯本地处理，不上传、不下载 AI 模型。复杂背景需手动圈选和修边。</text>
   <view v-if="draft" class="magnet-maker">
    <view class="magnet-maker-title">{{ editing ? '调整冰箱贴' : '冰箱贴效果预览' }}</view>
+   <!-- #ifdef H5 -->
+   <LocalCutout v-if="draft.style==='cutout' && sourcePhoto" :key="draft.id" :source="sourcePhoto" :initial="draft.cutout" :processed-url="draft.assetId!==draft.sourceAssetId ? draftPhoto?.thumbnail : undefined" :busy="busy" @dirty="$emit('dirty')" @processing="$emit('processing',$event)" @processed="$emit('processed',$event)"/>
+   <!-- #endif -->
+   <view v-if="draft.style!=='cutout'" class="legacy-editor">
+   <text class="magnet-helper">旧版相框样式（兼容历史草稿）。可用原图重新制作异形冰箱贴。</text>
+   <!-- #ifdef H5 -->
+   <button class="magnet-upload" :disabled="busy" @click="update({...draft,style:'cutout',sourceAssetId:draft.assetId,cutout:undefined});$emit('dirty')">用原图重新制作异形</button>
+   <!-- #endif -->
    <view class="magnet-display"><MagnetPreview :magnet="draft" :photo="draftPhoto" /></view>
    <view class="magnet-styles"><button v-for="s in styles" :key="s.id" :aria-pressed="draft.style===s.id" :class="{active:draft.style===s.id}" :disabled="busy" @click="update({...draft,style:s.id})">{{ s.name }}</button></view>
    <RangeControl label="冰箱贴缩放" :model-value="Math.round(draft.crop.zoom*100)" :min="100" :max="300" :display="draft.crop.zoom.toFixed(2)+'×'" @update:model-value="crop('zoom',$event/100)"/>
    <RangeControl label="冰箱贴水平位置" :model-value="Math.round(draft.crop.x*100)" :min="0" :max="100" :display="Math.round(draft.crop.x*100)+'%'" @update:model-value="crop('x',$event/100)"/>
    <RangeControl label="冰箱贴垂直位置" :model-value="Math.round(draft.crop.y*100)" :min="0" :max="100" :display="Math.round(draft.crop.y*100)+'%'" @update:model-value="crop('y',$event/100)"/>
-   <view class="magnet-maker-actions"><button :disabled="busy" @click="update({...draft,crop:{zoom:1,x:.5,y:.5}})">恢复居中</button><button :disabled="busy" @click="$emit('cancel')">取消</button></view>
-   <button class="magnet-add" :disabled="busy" @click="$emit('commit')">{{ editing ? '保存冰箱贴调整' : '加入冰箱贴区域' }}</button>
+   </view>
+   <view class="magnet-maker-actions"><button :disabled="busy" v-if="draft.style!=='cutout'" @click="update({...draft,crop:{zoom:1,x:.5,y:.5}})">恢复居中</button><button :disabled="busy" @click="$emit('cancel')">取消</button></view>
+   <button class="magnet-add" :disabled="busy || draft.style==='cutout' && cutoutDirty" @click="$emit('commit')">{{ editing ? '保存冰箱贴调整' : '加入冰箱贴区域' }}</button>
    <text class="magnet-helper">{{ editing ? '保存后更新手账；取消保留原来的样式。' : '点击加入后才会放入手账，未加入的预览不会导出或保存到草稿。' }}</text>
   </view>
   <view v-if="magnets.length" class="magnet-collection">
@@ -26,12 +38,18 @@
  </view>
 </template>
 <script setup lang="ts">
+// #ifdef H5
+import LocalCutout from './LocalCutout.vue'
+// #endif
+import type {CutoutRecipe} from '../core/sticker'
+import {computed} from 'vue'
 import type {Magnet,Photo,Crop} from '../types'
 import {MAX_MAGNETS as max,magnetStyles as styles} from '../core/magnets'
 import RangeControl from './RangeControl.vue'
 import MagnetPreview from './MagnetPreview.vue'
-const props=defineProps<{magnets:Magnet[];photos:Map<string,Photo>;draft:Magnet|null;draftPhoto?:Photo;editing:boolean;busy:boolean;ready:boolean}>()
-const emit=defineEmits<{(e:'upload'):void;(e:'update',m:Magnet):void;(e:'commit'):void;(e:'cancel'):void;(e:'edit',id:string):void;(e:'remove',id:string):void;(e:'move',index:number,direction:number):void}>()
+const props=defineProps<{magnets:Magnet[];photos:Map<string,Photo>;draft:Magnet|null;draftPhoto?:Photo;editing:boolean;busy:boolean;ready:boolean;cutoutDirty:boolean}>()
+const emit=defineEmits<{(e:'dirty'):void;(e:'processing',active:boolean):void;(e:'processed',data:{png:string;recipe:CutoutRecipe}):void;(e:'upload'):void;(e:'update',m:Magnet):void;(e:'commit'):void;(e:'cancel'):void;(e:'edit',id:string):void;(e:'remove',id:string):void;(e:'move',index:number,direction:number):void}>()
+const sourcePhoto=computed(()=>props.draft?props.photos.get(props.draft.sourceAssetId||props.draft.assetId):undefined)
 function update(m:Magnet){emit('update',m)}
 function crop(key:keyof Crop,value:number){if(props.draft)update({...props.draft,crop:{...props.draft.crop,[key]:value}})}
 </script>

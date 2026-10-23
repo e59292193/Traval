@@ -1,6 +1,6 @@
 {
   "name": "traval-journal",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "private": true,
   "scripts": {
     "dev:h5": "uni --host 0.0.0.0",
@@ -12,7 +12,8 @@
     "test:travel": "node tests/travel-e2e.mjs",
     "test:map": "node tests/map-v4-e2e.mjs",
     "test:map-fixes": "node tests/map-fixes-e2e.mjs",
-    "test:magnets": "node tests/magnets-e2e.mjs"
+    "test:magnets": "node tests/magnets-e2e.mjs",
+    "test:cutout": "node tests/cutout-e2e.mjs"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-5020620260917001",

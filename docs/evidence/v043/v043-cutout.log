@@ -1,0 +1,20 @@
+PASS new upload defaults to subject cutout, not a square or circle frame
+PASS actual Worker removes edge-connected background and generates an alpha PNG with contour rim
+PASS uncommitted original and generated result stay out of saved draft
+PASS full rectangular mask is blocked, and undo recovers the cutout
+PASS background point and undo update the real image mask
+PASS drag erase and coordinate-based restore work without cloud processing
+PASS committed sticker stores original and processed PNG as distinct referenced assets
+PASS cancel re-edit preserves prior recipe and processed image
+PASS IndexedDB restore preserves processed transparency, not a white rectangle
+PASS manual polygon isolates a photographic landscape silhouette and produces a non-rectangular sticker
+PASS 390px cutout tools, coordinate fields and preview do not overflow
+PASS loaded Worker can regenerate contour and cartoon effect while offline
+PASS manual outline and all editing settings persist with the original photograph
+PASS regeneration releases superseded processed source while retaining original for future editing
+PASS actual 1500x2010 poster exports processed silhouettes with no fixed frame
+PASS remove releases both original and processed source when no longer referenced
+PASS very tall input fits within a 360px editor instead of trapping mobile scrolling
+PASS failed Worker initialization reports an error, retries and cancels without damaging committed stickers
+PASS invalid upload preserves the collection and leaves no partial cutout editor
+PASS no image uploads, model downloads, third-party image services or uncaught exceptions

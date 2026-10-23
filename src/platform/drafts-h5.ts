@@ -1,4 +1,4 @@
-import {validateMagnets} from '../core/magnets'
+import {validateMagnets,magnetAssetIds} from '../core/magnets'
 import type {Work,Photo} from '../types'
 import {validateJournal,type Journal} from '../core/travel'
 import {journey} from '../templates/journey'
@@ -21,8 +21,9 @@ export function validateDraft(raw:unknown):Draft{
 function validTimestamp(s:unknown){return typeof s==='string'&&Number.isFinite(Date.parse(s))}
 export async function saveDraft(work:Work,journal:Journal,photos:Map<string,Photo>){
  const snapshot=JSON.parse(JSON.stringify({work,journal})),encoded:DraftPhoto[]=[]
- const referenced=new Set([...Object.values(snapshot.work.photos as Work['photos']).flatMap(b=>b?[b.assetId]:[]),...(snapshot.journal as Journal).trips.flatMap(t=>t.stops.flatMap(s=>s.photoId?[s.photoId]:[])),...(snapshot.work.magnets||[]).map((m:{assetId:string})=>m.assetId)])
- for(const id of referenced){const p=photos.get(id);if(!p)throw new Error('照片尚未准备好，草稿未保存');const c=document.createElement('canvas');c.width=p.width;c.height=p.height;const ctx=c.getContext('2d');if(!ctx)throw new Error('保存草稿时内存不足');try{ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(p.source as CanvasImageSource,0,0);const blob=await new Promise<Blob>((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error('草稿照片编码失败')),'image/jpeg',.92));encoded.push({id:p.id,blob})}finally{c.width=c.height=1}}
+ const magnetIds=new Set<string>((snapshot.work.magnets as Work['magnets']).flatMap(magnetAssetIds))
+ const referenced=new Set([...Object.values(snapshot.work.photos as Work['photos']).flatMap(b=>b?[b.assetId]:[]),...(snapshot.journal as Journal).trips.flatMap(t=>t.stops.flatMap(s=>s.photoId?[s.photoId]:[])),...magnetIds])
+ for(const id of referenced){const p=photos.get(id);if(!p)throw new Error('照片尚未准备好，草稿未保存');const c=document.createElement('canvas');c.width=p.width;c.height=p.height;const ctx=c.getContext('2d');if(!ctx)throw new Error('保存草稿时内存不足');try{if(!magnetIds.has(id)){ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height)}ctx.drawImage(p.source as CanvasImageSource,0,0);const blob=await new Promise<Blob>((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error('草稿照片编码失败')),magnetIds.has(id)?'image/png':'image/jpeg',.92));encoded.push({id:p.id,blob})}finally{c.width=c.height=1}}
  const draft=validateDraft({version:1,savedAt:new Date().toISOString(),...snapshot,photos:encoded});await operation('readwrite',s=>s.put(draft,KEY));return draft.savedAt
 }
 export async function loadDraft(){const d=await operation<unknown>('readonly',s=>s.get(KEY));return d?validateDraft(d):null}

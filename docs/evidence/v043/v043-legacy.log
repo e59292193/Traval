@@ -1,0 +1,8 @@
+PASS v0.4.2 square and round stickers restore without migration loss
+PASS cancelling a legacy edit preserves the original style
+PASS existing legacy style and crop controls remain editable
+PASS old source can enter local silhouette workflow, and cancellation is non-destructive
+PASS legacy sticker reorder still saves
+PASS shared legacy source is not released while another sticker references it
+PASS legacy sticker exports through unchanged shared poster renderer
+PASS legacy compatibility has no uncaught runtime errors

@@ -8,6 +8,7 @@ function shape(c:DrawContext,x:number,y:number,size:number,round:boolean){
 }
 /** Shared Canvas renderer for preview and exported poster; image pixels stay local. */
 export function drawMagnet(c:DrawContext,m:Magnet,p:Photo,x:number,y:number,size:number,rotation=0){
+ if(m.style==='cutout'){const scale=Math.min(size/p.width,size/p.height),w=p.width*scale,h=p.height*scale;c.save();c.translate(x+size/2,y+size/2);c.rotate(rotation*Math.PI/180);c.drawImage(p.source,-w/2,-h/2,w,h);c.restore();return}
  c.save();c.translate(x+size/2,y+size/2);c.rotate(rotation*Math.PI/180);c.translate(-size/2,-size/2)
  const round=m.style==='round',rim=size*.085,inner=size-2*rim
  shape(c,2,size*.065,size,round);c.fillStyle='#443b3033';c.fill()

@@ -1,0 +1,65 @@
+
+> traval-journal@0.4.3 test
+> tsx --test tests/*.test.ts
+
+✔ cover preserves aspect and fills landscape / portrait / square / panoramic (2.169445ms)
+✔ normalized source crop is independent of render scale (0.271092ms)
+✔ large drags cannot expose blank edges (0.290709ms)
+✔ pan axis without overflow stays stable (0.214515ms)
+✔ invalid values are clamped (1.025507ms)
+✔ invalid image sizes fail explicitly (0.414572ms)
+✔ grapheme limits preserve family emoji and accents (16.584066ms)
+✔ Chinese and long English wrap without whitespace (0.638916ms)
+✔ explicit newlines are preserved (0.386496ms)
+✔ overflow adds ellipsis at minimum font size (1.706142ms)
+✔ valid serializable template / separate work (1.268171ms)
+✔ duplicate IDs / bindings / palette fail validation (0.753693ms)
+✔ PNG dimensions detected before decoding (0.713736ms)
+✔ huge PNG rejected before decoding (0.620854ms)
+✔ JPEG and WebP header parsing (0.375473ms)
+✔ HEIC and truncated files rejected (0.498451ms)
+✔ v2 geographic image and photo positions are fixed configuration, not implicit geocoding (0.425918ms)
+✔ v2 photo box is shared by rendering and pan mapping (0.548459ms)
+✔ draft validates complete empty work and current schema (31.188793ms)
+✔ draft requires every binding to have an actual supported image Blob (2.103752ms)
+✔ invalid work version and overlength text cannot overwrite current edit (0.843388ms)
+✔ archived trip photo survives without a current handout binding, and missing archive is rejected (1.740059ms)
+✔ new work has independent empty magnet collection (1.639352ms)
+✔ old drafts migrate without losing text and photo bindings (25.217509ms)
+✔ magnet-only image reference survives validated draft (1.478113ms)
+✔ reject invalid styles, duplicate IDs and more than eight (0.662804ms)
+✔ reject NaN, out-of-range and missing crops (0.450836ms)
+✔ round and ceramic use original source, square crop and bounded rim (1.293641ms)
+✔ Taiwan name override is exact and does not rename strait or cities (6.430232ms)
+✔ region overlay includes all 34 IDs with unique Taiwan province name (0.507484ms)
+✔ manual highlights toggle without inventing city stops or blocking cancellation (1.553769ms)
+✔ recorded regions cannot silently gain manual pins and trip filtering is consistent (0.573823ms)
+✔ worker features can structuredClone Vue reactive input and never retain mutable coordinates (1.912736ms)
+✔ same-coordinate consecutive visits retain records but generate no invisible route (0.362099ms)
+✔ automatic mask removes only edge-connected corner-like background (5.251741ms)
+✔ background flood does not delete enclosed matching white detail (2.685196ms)
+✔ polygon selection follows non-rectangular subject and keeps concavities (1.163016ms)
+✔ erase and restore brush follow connected stroke segments (2.224984ms)
+✔ original transparency cannot be resurrected by restore brush (0.771172ms)
+✔ compose trims unused background, adds real contour rim and leaves transparent corners (20.74157ms)
+✔ empty and unseparated full-photo masks are rejected, not passed off as stickers (1.471278ms)
+✔ cartoon zero preserves exact colour and processing never mutates original pixels (11.114555ms)
+✔ recipe rejects excessive points, invalid ranges and non-finite input (0.731774ms)
+✔ cutout draft requires distinct original and processed images plus a valid recipe (1.159453ms)
+✔ empty travel has no invented city/trip/region counts (3.362039ms)
+✔ stats deduplicate cities and merge manually visited regions (0.610466ms)
+✔ routes never connect different trips and follow list order (0.747663ms)
+✔ valid calendar date checks include leap years (3.80979ms)
+✔ travel schema roundtrips, rejects unknown coordinates, duplicate ids and bad dates (2.273167ms)
+✔ legacy coordinates migrate without relabeling or deleting records (0.831885ms)
+✔ unverified middle stop cannot be skipped to connect a false route (0.568486ms)
+✔ map export extent handles empty, single, identical and selected trip points (0.705097ms)
+✔ schema rejects invalid coordinate systems, export scopes and original coords (0.87038ms)
+ℹ tests 53
+ℹ suites 0
+ℹ pass 53
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2355.450739

@@ -1,0 +1,29 @@
+{
+  "browser": "153.0.8010.12",
+  "checks": [
+    "new upload defaults to subject cutout, not a square or circle frame",
+    "actual Worker removes edge-connected background and generates an alpha PNG with contour rim",
+    "uncommitted original and generated result stay out of saved draft",
+    "full rectangular mask is blocked, and undo recovers the cutout",
+    "background point and undo update the real image mask",
+    "drag erase and coordinate-based restore work without cloud processing",
+    "committed sticker stores original and processed PNG as distinct referenced assets",
+    "cancel re-edit preserves prior recipe and processed image",
+    "IndexedDB restore preserves processed transparency, not a white rectangle",
+    "manual polygon isolates a photographic landscape silhouette and produces a non-rectangular sticker",
+    "390px cutout tools, coordinate fields and preview do not overflow",
+    "loaded Worker can regenerate contour and cartoon effect while offline",
+    "manual outline and all editing settings persist with the original photograph",
+    "regeneration releases superseded processed source while retaining original for future editing",
+    "actual 1500x2010 poster exports processed silhouettes with no fixed frame",
+    "remove releases both original and processed source when no longer referenced",
+    "very tall input fits within a 360px editor instead of trapping mobile scrolling",
+    "failed Worker initialization reports an error, retries and cancels without damaging committed stickers",
+    "invalid upload preserves the collection and leaves no partial cutout editor",
+    "no image uploads, model downloads, third-party image services or uncaught exceptions"
+  ],
+  "errors": [],
+  "requestMethods": [
+    "GET"
+  ]
+}

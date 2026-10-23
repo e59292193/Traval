@@ -1,10 +1,10 @@
 <template>
  <view class="app-shell">
-  <view class="topbar"><view class="brand"><view class="brand-mark">↗</view><view><text class="brand-name">沿途</text><text class="brand-en">TRAVEL JOURNAL</text></view></view><text class="top-note">让每次出发，都有迹可循。</text><text class="prototype">{{ platform.name==='H5' ? 'H5 原型' : '小程序验证版' }} · v0.4.2</text></view>
+  <view class="topbar"><view class="brand"><view class="brand-mark">↗</view><view><text class="brand-name">沿途</text><text class="brand-en">TRAVEL JOURNAL</text></view></view><text class="top-note">让每次出发，都有迹可循。</text><text class="prototype">{{ platform.name==='H5' ? 'H5 原型' : '小程序验证版' }} · v0.4.3</text></view>
   <view class="intro"><view><text class="eyebrow">MAKE ROOM FOR MEMORIES</text><view class="intro-title">把足迹，装进一张手账地图。</view><text class="intro-sub">水彩纸张、地图拼贴和拍立得照片，收藏属于你的沿途。</text></view><text class="privacy">◉ 照片仅在当前设备内处理</text></view>
   <view class="workspace">
    <view class="preview-panel">
-    <view class="preview-toolbar"><text class="section-label">作品预览</text><text class="preview-tag">精细地图手账 · V4.2</text></view>
+    <view class="preview-toolbar"><text class="section-label">作品预览</text><text class="preview-tag">精细地图手账 · V4.3</text></view>
     <view class="poster-wrap"><view id="preview-host" class="poster-host" :class="{'is-cropping':cropOpen}">
      <!-- #ifdef MP-WEIXIN -->
      <canvas id="poster-preview" canvas-id="poster-preview" type="2d" class="mp-preview" :style="{width:mpPreviewWidth+'px',height:(mpPreviewWidth*journey.height/journey.width)+'px'}" :disable-scroll="cropOpen" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd" @touchcancel="touchEnd" />
@@ -38,7 +38,7 @@
       <button class="text-button" @click="centerCrop">恢复居中</button>
      </view>
     </view>
-    <MagnetStudio :magnets="work.magnets" :photos="photos" :draft="magnetDraft" :draft-photo="magnetDraft ? photos.get(magnetDraft.assetId) : undefined" :editing="!!magnetDraft && work.magnets.some(m=>m.id===magnetDraft!.id)" :busy="busy" :ready="ready" @upload="chooseMagnet" @update="magnetDraft=$event" @commit="commitMagnet" @cancel="cancelMagnet" @edit="editMagnet" @remove="removeMagnet" @move="moveMagnet" />
+    <MagnetStudio :magnets="work.magnets" :photos="photos" :draft="magnetDraft" :draft-photo="magnetDraft ? photos.get(magnetDraft.assetId) : undefined" :editing="!!magnetDraft && work.magnets.some(m=>m.id===magnetDraft!.id)" :busy="busy" :ready="ready" :cutout-dirty="magnetCutoutDirty" @dirty="magnetCutoutDirty=true" @processing="magnetProcessing=$event" @processed="applyCutout" @upload="chooseMagnet" @update="updateMagnetDraft" @commit="commitMagnet" @cancel="cancelMagnet" @edit="editMagnet" @remove="removeMagnet" @move="moveMagnet" />
     <view class="editor-section"><view class="step-title"><text class="step-number">03</text><text>挑一种心情</text></view><view class="palettes"><button v-for="p in journey.palettes" :key="p.id" :class="['palette',{'active':work.paletteId===p.id}]" :aria-label="`配色：${p.name}`" :aria-pressed="work.paletteId===p.id" :disabled="busy" @click="work.paletteId=p.id"><view class="swatches"><view :style="{background:p.ink}"/><view :style="{background:p.soft}"/><view :style="{background:p.tape}"/></view><text>{{ p.name }}</text><text v-if="work.paletteId===p.id" class="palette-check">✓</text></button></view></view>
     <view class="export-section"><view class="export-heading"><text>图片清晰度</text><text>JPEG</text></view><view class="resolution"><button :class="{'active':resolution===1500}" :disabled="busy" @click="resolution=1500">高清 · 1500 × 2010</button><button :class="{'active':resolution===1000}" :disabled="busy" @click="resolution=1000">轻量 · 1000 × 1340</button></view><button class="primary export-button" :disabled="busy || !ready" @click="exportWork">{{ exporting ? '正在生成图片…' : loading ? '正在处理照片…' : '导出我的旅行手账 ↗' }}</button><text class="export-hint">{{ !ready ? '画布准备好后即可导出' : '不上传照片 · H5 可在下方手动保存本地草稿' }}</text></view>
    </view>
@@ -70,7 +70,8 @@ import {panCrop,normalizeCrop} from '../../core/crop'
 import {drawPoster} from '../../render/poster'
 import {createPlatform,setCropMode} from '../../platform'
 import MagnetStudio from '../../components/MagnetStudio.vue'
-import {MAX_MAGNETS} from '../../core/magnets'
+import type {CutoutRecipe} from '../../core/sticker'
+import {MAX_MAGNETS,magnetAssetIds} from '../../core/magnets'
 import RangeControl from '../../components/RangeControl.vue'
 import {createJournal,validateJournal} from '../../core/travel'
 // #ifdef H5
@@ -81,14 +82,14 @@ import {saveDraft,loadDraft,draftDate,deleteDraft} from '../../platform/drafts-h
 const platform=createPlatform(),scope=getCurrentInstance()?.proxy
 const mpPreviewWidth=Math.min(420,Math.max(120,uni.getSystemInfoSync().windowWidth-64))
 const work=reactive<Work>(createWork(journey)),photos=reactive(new Map<string,Photo>()),assets=new Map<string,Photo>()
-const magnetDraft=ref<Magnet|null>(null)
+const magnetDraft=ref<Magnet|null>(null),magnetCutoutDirty=ref(true),magnetProcessing=ref(false)
 const inputValues=reactive({...work.text})
 const journal=reactive(createJournal()),draftSavedAt=ref(''),draftDirty=ref(false)
 const activePalette=computed(()=>journey.palettes.find(p=>p.id===work.paletteId)||journey.palettes[0])
 const draftStatus=computed(()=>draftSavedAt.value?'本地保存于 '+new Date(draftSavedAt.value).toLocaleString()+(draftDirty.value?' · 有未保存修改':''):'尚未保存本地草稿')
 const photoIds=computed(()=>Object.fromEntries(Object.entries(work.photos).map(([slot,b])=>[slot,b?.assetId||''])))
 const photoThumbs=computed(()=>({...Object.fromEntries([...photos.values()].map(p=>[p.id,p.thumbnail])),...Object.fromEntries(Object.entries(work.photos).map(([slot,b])=>[slot,b?photos.get(b.assetId)?.thumbnail||'':'']))}))
-function photoReferenced(id:string){return magnetDraft.value?.assetId===id||work.magnets.some(m=>m.assetId===id)||Object.values(work.photos).some(b=>b?.assetId===id)||journal.trips.some(t=>t.stops.some(s=>s.photoId===id))}
+function photoReferenced(id:string){return !!magnetDraft.value&&magnetAssetIds(magnetDraft.value).includes(id)||work.magnets.some(m=>magnetAssetIds(m).includes(id))||Object.values(work.photos).some(b=>b?.assetId===id)||journal.trips.some(t=>t.stops.some(s=>s.photoId===id))}
 function releasePhoto(id:string){if(!photoReferenced(id)){photos.get(id)?.dispose();photos.delete(id)}}
 watch(()=>journal.trips.flatMap(t=>t.stops.map(s=>s.photoId)),()=>{for(const id of photos.keys())releasePhoto(id)})
 const photoExamples=computed(()=>Object.fromEntries(Object.entries(work.photos).map(([slot,b])=>[slot,!!b?.example])))
@@ -141,7 +142,7 @@ async function clearLocal(){
 }
 const detailsOpen=ref(false)
 const ready=ref(false),initializing=ref(false),loading=ref(false),exporting=ref(false),saving=ref(false),message=ref(''),isError=ref(false),cropOpen=ref(false),selected=ref('p1'),resolution=ref(1500),result=ref<ExportResult|null>(null),saveHint=ref('桌面端可下载；手机或微信内可长按图片保存。')
-const busy=computed(()=>loading.value||exporting.value||saving.value)
+const busy=computed(()=>loading.value||exporting.value||saving.value||magnetProcessing.value)
 const slots=journey.layers.filter((l):l is Extract<typeof l,{type:'photo'}>=>l.type==='photo')
 const fields:{key:Field;label:string;placeholder:string}[]=[{key:'title',label:'主标题',placeholder:'My Travel Map'},{key:'subtitle',label:'目的地 / 副标题',placeholder:'记录沿途的美好'},{key:'date',label:'旅行日期（选填）',placeholder:'例如：2026.10.01 — 10.07'},{key:'name',label:'昵称',placeholder:'Traveler'},{key:'note',label:'旅行札记',placeholder:'写下旅途中的小事'},{key:'wish',label:'下一站心愿',placeholder:'下一站，继续出发'}]
 const visibleFields=computed(()=>detailsOpen.value?fields:fields.slice(0,3))
@@ -179,18 +180,36 @@ async function editText(field:Field,event:any){
   notify(`${fields.find(f=>f.key===field)!.label}最多 ${limits[field]} 个字符，已保留限制内文字`)
  }
 }
-function cancelMagnet(){if(busy.value)return;const id=magnetDraft.value?.assetId;magnetDraft.value=null;if(id)releasePhoto(id)}
+function cancelMagnet(){if(busy.value)return;const ids=magnetDraft.value?magnetAssetIds(magnetDraft.value):[];magnetDraft.value=null;for(const id of ids)releasePhoto(id)}
 async function chooseMagnet(){
  if(!target||busy.value||magnetDraft.value||work.magnets.length>=MAX_MAGNETS)return
  loading.value=true;const version=++requestVersion
- try{if(photos.size>=32)throw new Error('照片与冰箱贴共用 32 张本地图片上限，请移除不再需要的图片后重试')
+ try{if(photos.size>=31)throw new Error('需为原图和处理结果预留两个位置。照片与冰箱贴共用 32 张本地图片上限，请移除不再需要的图片后重试')
  const p=await platform.choosePhoto(target);if(!p)return;if(!alive||version!==requestVersion){p.dispose();return}
- photos.set(p.id,markRaw(p));magnetDraft.value={id:'magnet-'+Date.now()+'-'+Math.random().toString(36).slice(2),assetId:p.id,style:'ceramic',crop:{zoom:1,x:.5,y:.5}};cropOpen.value=false;notify('图片已就绪。调整样式和构图后，点击“加入冰箱贴区域”。')
+ photos.set(p.id,markRaw(p));magnetDraft.value={id:'magnet-'+Date.now()+'-'+Math.random().toString(36).slice(2),assetId:p.id,style:'ceramic',crop:{zoom:1,x:.5,y:.5}};
+ // #ifdef H5
+ magnetDraft.value.style='cutout';magnetDraft.value.sourceAssetId=p.id;magnetCutoutDirty.value=true
+ // #endif
+ cropOpen.value=false
+ // #ifdef H5
+ notify('图片已就绪。先抠出主体，再生成异形冰箱贴，确认后加入手账。')
+ // #endif
+ // #ifdef MP-WEIXIN
+ notify('小程序暂用旧版照片贴；本地异形抠图请在 H5 使用。')
+ // #endif
  }catch(e){fail(e)}finally{loading.value=false}
 }
-function commitMagnet(){if(busy.value||!magnetDraft.value)return;const m=JSON.parse(JSON.stringify(magnetDraft.value)) as Magnet,index=work.magnets.findIndex(i=>i.id===m.id);if(index<0){if(work.magnets.length>=MAX_MAGNETS)return;work.magnets.push(m)}else work.magnets[index]=m;magnetDraft.value=null;notify('冰箱贴已放入手账，可随作品导出。记得保存本地草稿。')}
-function editMagnet(id:string){if(busy.value||magnetDraft.value)return;const m=work.magnets.find(m=>m.id===id);if(m)magnetDraft.value=JSON.parse(JSON.stringify(m))}
-function removeMagnet(id:string){if(busy.value||magnetDraft.value)return;const i=work.magnets.findIndex(m=>m.id===id);if(i<0)return;const [m]=work.magnets.splice(i,1);releasePhoto(m.assetId);notify('冰箱贴已移除，空位恢复原装饰。')}
+function updateMagnetDraft(m:Magnet){if(m.style==='cutout'&&magnetDraft.value?.style!=='cutout')magnetCutoutDirty.value=true;magnetDraft.value=m}
+async function applyCutout(data:{png:string;recipe:CutoutRecipe}){
+ if(!target||!magnetDraft.value)return;loading.value=true;const draftId=magnetDraft.value.id
+ try{if(photos.size>=32)throw new Error('本地源图已达 32 张上限，请先移除不再需要的图片再生成')
+ const p=await platform.loadAsset(target,'sticker-'+Date.now()+'-'+Math.random().toString(36).slice(2),data.png);if(!alive||magnetDraft.value?.id!==draftId){p.dispose();return}
+ const old=magnetDraft.value.assetId;photos.set(p.id,markRaw(p));magnetDraft.value={...magnetDraft.value,assetId:p.id,style:'cutout',cutout:data.recipe};magnetCutoutDirty.value=false;releasePhoto(old);notify('异形冰箱贴已生成，请检查轮廓后加入手账。')
+ }catch(e){fail(e)}finally{loading.value=false}
+}
+function commitMagnet(){if(busy.value||!magnetDraft.value||magnetDraft.value.style==='cutout'&&magnetCutoutDirty.value)return;const m=JSON.parse(JSON.stringify(magnetDraft.value)) as Magnet,index=work.magnets.findIndex(i=>i.id===m.id);if(index<0){if(work.magnets.length>=MAX_MAGNETS)return;work.magnets.push(m)}else{const old=work.magnets[index];work.magnets[index]=m;for(const id of magnetAssetIds(old))releasePhoto(id)}magnetDraft.value=null;notify('冰箱贴已放入手账，可随作品导出。记得保存本地草稿。')}
+function editMagnet(id:string){if(busy.value||magnetDraft.value)return;const m=work.magnets.find(m=>m.id===id);if(m){magnetDraft.value=JSON.parse(JSON.stringify(m));magnetCutoutDirty.value=false}}
+function removeMagnet(id:string){if(busy.value||magnetDraft.value)return;const i=work.magnets.findIndex(m=>m.id===id);if(i<0)return;const [m]=work.magnets.splice(i,1);for(const id of magnetAssetIds(m))releasePhoto(id);notify('冰箱贴已移除，空位恢复原装饰。')}
 function moveMagnet(i:number,d:number){if(busy.value||magnetDraft.value)return;const j=i+d;if(j<0||j>=work.magnets.length)return;[work.magnets[i],work.magnets[j]]=[work.magnets[j],work.magnets[i]]}
 async function choose(slot:string){if(!target||busy.value)return;loading.value=true;const version=++requestVersion;try{if(photos.size>=32)throw new Error('已保留 32 张旅行/手账照片，请先删除不再需要的旅行照片记录后重试');const photo=await platform.choosePhoto(target);if(!photo)return;if(!alive||version!==requestVersion){photo.dispose();return}const old=work.photos[slot];photos.set(photo.id,markRaw(photo));work.photos[slot]={assetId:photo.id,crop:{zoom:1,x:.5,y:.5}};if(old)releasePhoto(old.assetId);selected.value=slot;notify('照片已放入。点击“裁剪”可调整构图。')}catch(e){fail(e)}finally{loading.value=false}}
 async function loadExample(){
