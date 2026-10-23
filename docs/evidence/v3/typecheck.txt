@@ -1,0 +1,4 @@
+
+> traval-journal@0.3.0 typecheck
+> vue-tsc --noEmit
+

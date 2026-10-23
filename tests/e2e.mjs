@@ -15,7 +15,7 @@ const choose=async(index,path)=>{await closeNotice();const event=page.waitForEve
 const exportImage=async()=>{await closeNotice();await page.locator('.export-button').click();await page.locator('.result-modal').waitFor();await page.waitForTimeout(180)}
 const closeResult=async()=>{await page.locator('.result-heading .text-button').click();await page.locator('.result-modal').waitFor({state:'hidden'})}
 try{
- await page.goto(process.env.BASE_URL||'http://127.0.0.1:4180');await page.locator('canvas').waitFor();await page.waitForTimeout(400)
+ await page.goto(process.env.BASE_URL||'http://127.0.0.1:4180');await page.locator('#preview-host canvas').waitFor();await page.waitForTimeout(400)
  check('initial render with 4 empty slots and empty date');assert.equal(await page.locator('.photo-picker').count(),4)
  assert.equal(await page.locator('.field input').nth(2).inputValue(),'')
  await page.screenshot({path:`${out}/desktop-empty.png`,fullPage:true})
@@ -40,7 +40,7 @@ try{
  const xTrack=sliders.nth(1).locator('.uni-slider-tap-area'),xBox=await xTrack.boundingBox()
  await xTrack.click({position:{x:xBox.width*.2,y:xBox.height/2}})
 
- const canvas=page.locator('canvas');await canvas.scrollIntoViewIfNeeded();let box=await canvas.boundingBox()
+ const canvas=page.locator('#preview-host canvas');await canvas.scrollIntoViewIfNeeded();let box=await canvas.boundingBox()
  const before=await canvas.evaluate(c=>c.toDataURL())
  await page.mouse.move(box.x+box.width*.3,box.y+box.height*.45);await page.mouse.down();await page.mouse.move(box.x+box.width*.4,box.y+box.height*.48,{steps:5});await page.mouse.up();await page.waitForTimeout(150)
  assert.notEqual(await canvas.evaluate(c=>c.toDataURL()),before)
@@ -107,7 +107,7 @@ try{
  // Force a template image decode failure on a fresh page; then retry with the original asset source.
  const assetFailure=await browser.newPage()
  await assetFailure.addInitScript(()=>{window.__failAsset=true;const d=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');Object.defineProperty(HTMLImageElement.prototype,'src',{configurable:true,get:d.get,set(value){if(window.__failAsset&&String(value).startsWith('data:image/')){window.__failAsset=false;d.set.call(this,'data:image/png;base64,broken')}else d.set.call(this,value)}})})
- await assetFailure.goto(process.env.BASE_URL||'http://127.0.0.1:4180');await assetFailure.getByText('重新准备画布',{exact:true}).waitFor();await assetFailure.getByText('重新准备画布',{exact:true}).click();await assetFailure.waitForFunction(()=>!document.querySelector('.load-example').hasAttribute('disabled'));assert.equal(await assetFailure.locator('canvas').count(),1);await assetFailure.close();check('template image failure shows retry and recovers with a single preview canvas')
+ await assetFailure.goto(process.env.BASE_URL||'http://127.0.0.1:4180');await assetFailure.getByText('重新准备画布',{exact:true}).waitFor();await assetFailure.getByText('重新准备画布',{exact:true}).click();await assetFailure.waitForFunction(()=>!document.querySelector('.load-example').hasAttribute('disabled'));assert.equal(await assetFailure.locator('#preview-host canvas').count(),1);await assetFailure.close();check('template image failure shows retry and recovers with a single preview canvas')
  const external=network.filter(r=>/^https?:/.test(r.url)&&!r.url.startsWith('http://127.0.0.1:4180')&&!r.url.startsWith(process.env.BASE_URL||'http://127.0.0.1:4180'))
  const postRequests=network.filter(r=>r.method!=='GET');assert.deepEqual(external,[]);assert.deepEqual(postRequests,[]);assert.deepEqual(errors,[]);check('no external requests, photo uploads, or runtime page errors in this test',{external,postRequests,requestCount:network.length})
  await writeFile(`${out}/e2e-results.json`,JSON.stringify({browser:await browser.version(),checks,network,errors},null,2));console.log(`ALL ${checks.length} CHECKS PASSED`)

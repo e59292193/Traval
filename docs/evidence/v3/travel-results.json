@@ -1,0 +1,99 @@
+{
+  "checks": [
+    "new map initializes with zero real travel statistics",
+    "create trip and two dated city stops with correct stats",
+    "invalid calendar date rejected without changing records",
+    "reorder and edit timeline stop",
+    "keyboard-accessible region selection updates visited stats",
+    "map zoom and reset",
+    "multiple trips and all-trip filter",
+    "real local photo slot linked to travel stop",
+    "replacing handout photo preserves the previously linked historical travel photo",
+    "IndexedDB reload/restore preserves trips, stops and actual photo Blob",
+    "accessible footprint inspection shows date, note and associated photo",
+    "selected trip loads its archived photos, dates and title into handout without deleting travel records",
+    "static-map fallback and footprint-map composition can be switched interactively",
+    "simulated storage quota failure keeps current work intact",
+    "incompatible persisted draft is rejected before current photos or records are replaced",
+    "interactive-map scrapbook exports full 1500x2010 JPEG",
+    "loaded app edits palette and saves draft without network",
+    "390px mobile layout without horizontal overflow",
+    "delete persisted draft keeps current edit",
+    "no uncaught exceptions, remote map requests or user-photo uploads"
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "url": "http://127.0.0.1:4180/",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/uni.07f86102.css",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/index-Boe9o-Q2.js",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/index-DKPkwkei.css",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/pages-index-index.s0XsBTvZ.js",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/index-Bn2L2RQP.css",
+      "method": "GET"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/9e3d97d5-ea4c-42d9-822d-bcc5750214fd",
+      "method": "GET"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/d72cc131-ded3-4db1-aaee-90d7016c8e1d",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/uni.07f86102.css",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/index-Boe9o-Q2.js",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/index-DKPkwkei.css",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/pages-index-index.s0XsBTvZ.js",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:4180/assets/index-Bn2L2RQP.css",
+      "method": "GET"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/032a60aa-db34-411c-85fe-81c7d2c2024d",
+      "method": "GET"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/3a478799-4ecf-4623-b2e8-a10a8814b5ed",
+      "method": "GET"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/13915156-fbe6-4cd4-b5c8-96190720b49f",
+      "method": "GET"
+    },
+    {
+      "url": "blob:http://127.0.0.1:4180/13915156-fbe6-4cd4-b5c8-96190720b49f",
+      "method": "GET"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+
+> traval-journal@0.3.0 test
+> tsx --test tests/*.test.ts
+
+✔ cover preserves aspect and fills landscape / portrait / square / panoramic (2.232075ms)
+✔ normalized source crop is independent of render scale (0.199519ms)
+✔ large drags cannot expose blank edges (0.460402ms)
+✔ pan axis without overflow stays stable (0.714536ms)
+✔ invalid values are clamped (0.774494ms)
+✔ invalid image sizes fail explicitly (0.296748ms)
+✔ grapheme limits preserve family emoji and accents (9.789306ms)
+✔ Chinese and long English wrap without whitespace (0.438265ms)
+✔ explicit newlines are preserved (0.225782ms)
+✔ overflow adds ellipsis at minimum font size (1.095061ms)
+✔ valid serializable template / separate work (0.773471ms)
+✔ duplicate IDs / bindings / palette fail validation (0.45681ms)
+✔ PNG dimensions detected before decoding (0.390519ms)
+✔ huge PNG rejected before decoding (0.329975ms)
+✔ JPEG and WebP header parsing (0.192434ms)
+✔ HEIC and truncated files rejected (0.17708ms)
+✔ v2 geographic image and photo positions are fixed configuration, not implicit geocoding (0.156412ms)
+✔ v2 photo box is shared by rendering and pan mapping (0.27806ms)
+✔ draft validates complete empty work and current schema (12.491732ms)
+✔ draft requires every binding to have an actual supported image Blob (0.994918ms)
+✔ invalid work version and overlength text cannot overwrite current edit (0.285057ms)
+✔ archived trip photo survives without a current handout binding, and missing archive is rejected (0.943458ms)
+✔ empty travel has no invented city/trip/region counts (1.56511ms)
+✔ stats deduplicate cities and merge manually visited regions (0.240682ms)
+✔ routes never connect different trips and follow list order (0.281101ms)
+✔ valid calendar date checks include leap years (1.841547ms)
+✔ travel schema roundtrips, rejects unknown coordinates, duplicate ids and bad dates (1.072694ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1153.731081

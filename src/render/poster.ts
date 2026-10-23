@@ -1,3 +1,4 @@
+import {travelStats,visibleTrips,type Journal} from '../core/travel'
 import type {DrawContext,Template,Work,Photo,Palette} from '../types'
 import {cropRect} from '../core/crop'
 import {fitText} from '../core/text'
@@ -30,7 +31,7 @@ function photo(c:DrawContext,l:PhotoLayer,work:Work,photos:Map<string,Photo>,pal
  c.restore()
  if(!small)pin(c,l.x+l.width*.43,l.y-10,.83)
 }
-function scene(c:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,assets:Map<string,Photo>,p:Palette){
+function scene(c:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,assets:Map<string,Photo>,p:Palette,journal?:Journal){
  // These are printed scrapbook motifs, not nonfunctional app controls.
  c.fillStyle='#fffdf3e6';rounded(c,580,39,260,52,26);c.fill();c.strokeStyle='#d6c8ac';c.lineWidth=1.5;c.stroke()
  c.strokeStyle=p.ink;c.lineWidth=2;c.beginPath();c.arc(604,63,8,0,Math.PI*2);c.moveTo(610,69);c.lineTo(617,76);c.stroke()
@@ -54,14 +55,16 @@ function scene(c:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,asset
  const menu=[['◎','地图'],['○','足迹'],['▧','照片'],['◇','冰箱贴'],['▤','票根'],['☆','纪念品'],['□','行程'],['♡','心愿清单'],['▥','本页记录'],['⚙','设置']]
  menu.forEach(([icon,text],i)=>{const y=444+i*39;label(c,icon,51,y,21,p.ink);label(c,text,89,y,20,p.ink,HAND)})
  // Actual page content, not invented trip/country statistics.
- const count=Object.values(work.photos).filter(Boolean).length
+ const count=Object.values(work.photos).filter(Boolean).length,stats=journal?travelStats(journal):null,hasTrips=!!stats&&(!!stats.stops||!!stats.regions||!!stats.trips||!!journal?.mapEnabled)
+ const dynamic=!!journal?.mapEnabled&&assets.has('travel-map')
+ if(dynamic&&journal){const selected=visibleTrips(journal);label(c,'中国旅行足迹',300,133,15,p.ink);paragraph(c,journal.activeTrip==='all'?'全部旅行':selected[0]?.name||'旅行足迹',300,151,340,13,11,1,p.accent);paragraph(c,selected.flatMap(t=>t.stops.map(s=>s.place.name)).join(' → '),270,608,300,14,12,2,p.ink)}
  label(c,'我的足迹',244,701,24,p.ink,HAND,'600')
- label(c,String(count).padStart(2,'0'),266,753,66,p.ink,HAND,'400')
- label(c,'张照片 · 本页珍藏',248,831,17,p.ink)
- label(c,'3',250,867,27,p.ink,HAND);label(c,'套配色',275,877,13,p.ink)
- label(c,'1',340,867,27,p.ink,HAND);label(c,'页回忆',366,877,13,p.ink)
- sticker(c,assets,2,343,756,63)
- label(c,'最近回忆',455,724,25,p.ink,HAND,'600');label(c,'♡',591,716,31,'#c58d55',HAND)
+ paragraph(c,String(hasTrips?stats!.cities:count).padStart(2,'0'),260,753,95,66,42,1,p.ink,HAND)
+ label(c,hasTrips?'个地点 · 全部旅行':'张照片 · 本页珍藏',248,831,17,p.ink)
+ if(hasTrips){paragraph(c,`${stats!.regions} 省级地区`,250,872,105,15,12,1,p.ink);paragraph(c,`${stats!.trips} 次旅行`,360,872,70,15,12,1,p.ink)}
+ else{label(c,'3',250,867,27,p.ink,HAND);label(c,'套配色',275,877,13,p.ink);label(c,'1',340,867,27,p.ink,HAND);label(c,'页回忆',366,877,13,p.ink)}
+ sticker(c,assets,2,365,756,63)
+ label(c,hasTrips?'本页照片':'最近回忆',455,724,25,p.ink,HAND,'600');label(c,'♡',591,716,31,'#c58d55',HAND)
  for(let i=0;i<4;i++)photo(c,{id:'memory-'+i,type:'photo',binding:'p'+(i+1),caption:'片刻',x:457+i*122,y:777+(i%2)*5,width:109,height:129,rotation:[-5,4,-3,6][i],opacity:1,radius:2,padding:6,captionHeight:39,captionSize:12},work,photos,p,true)
  label(c,'我的冰箱贴',48,949,25,p.ink,HAND,'600');label(c,'旅行灵感',330,955,13,p.accent)
  for(let i=0;i<8;i++)sticker(c,assets,i,47+(i%4)*96,994+Math.floor(i/4)*78,78)
@@ -76,23 +79,23 @@ function scene(c:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,asset
  for(const [i,word] of ['出发','遇见','收藏','再出发'].entries()){pin(c,426+i*133,1231,.7);label(c,word,426+i*133,1274,14,p.ink,FONT,'400','center')}
  const examples=Object.values(work.photos).filter(b=>b?.example).length
  if(examples)label(c,`示例照片 ${examples}/4 · AI生成场景，不是真实旅行记录`,461,667,11,'#91613a')
- label(c,'静态底图 GS(2016)2923号 · 照片为手账拼贴，不作地理定位',461,684,11,'#6a6758')
+ label(c,dynamic?'DataV GeoJSON 原型 · 连线非导航 · 公开发布要求待核验':'静态底图 GS(2016)2923号 · 照片为手账拼贴，不作地理定位',461,684,11,'#6a6758')
 }
-export function drawPoster(ctx:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,width:number,assets:Map<string,Photo>=new Map()){
+export function drawPoster(ctx:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,width:number,assets:Map<string,Photo>=new Map(),journal?:Journal){
  const ratio=width/t.width,p=t.palettes.find(p=>p.id===work.paletteId)||t.palettes[0]
  ctx.save();ctx.scale(ratio,ratio);ctx.textBaseline='top'
  for(const l of t.layers){
-  if(l.type==='photo'){photo(ctx,l,work,photos,p);continue}
+  if(l.type==='photo'){if(!journal?.mapEnabled||!assets.has('travel-map'))photo(ctx,l,work,photos,p);continue}
   ctx.save();ctx.globalAlpha=l.opacity;ctx.translate(l.x+l.width/2,l.y+l.height/2);ctx.rotate(l.rotation*Math.PI/180);ctx.translate(-l.width/2,-l.height/2)
   if(l.type==='background'){ctx.fillStyle=p.paper;ctx.fillRect(0,0,t.width,t.height);ctx.drawImage(source(assets,assetIds.background).source,0,0,t.width,t.height)}
-  else if(l.type==='image'){ctx.drawImage(source(assets,l.assetId).source,0,0,l.width,l.height)}
+  else if(l.type==='image'){const a=l.id==='china-map'&&journal?.mapEnabled&&assets.has('travel-map')?assets.get('travel-map')!:source(assets,l.assetId);ctx.drawImage(a.source,0,0,l.width,l.height)}
   else if(l.type==='text'){
    const isTitle=l.binding==='title';const font=isTitle?HAND:FONT
    ctx.fillStyle=p[l.color];ctx.textAlign=l.align
    const fit=fitText(work.text[l.binding],l.width,l.maxLines,l.fontSize,l.minFontSize,(s,size)=>{ctx.font=`${l.weight} ${size}px ${font}`;return ctx.measureText(s).width})
    ctx.font=`${l.weight} ${fit.fontSize}px ${font}`;const top=Math.max(0,(l.height-fit.lines.length*fit.fontSize*l.lineHeight)/2)
    fit.lines.forEach((s,i)=>ctx.fillText(s,l.align==='center'?l.width/2:l.align==='right'?l.width:0,top+i*fit.fontSize*l.lineHeight))
-  }else if(l.type==='shape'&&l.shape==='scrapbook')scene(ctx,t,work,photos,assets,p)
+  }else if(l.type==='shape'&&l.shape==='scrapbook')scene(ctx,t,work,photos,assets,p,journal)
   ctx.restore()
  }
  ctx.restore()

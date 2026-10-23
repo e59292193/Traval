@@ -1,0 +1,13 @@
+{
+  "day": "2026-10-23",
+  "node": "v24.22.1",
+  "npm": "11.19.1",
+  "browser": "153.0.8010.12",
+  "platform": "Linux-6.18.49-x86_64-with-glibc2.34",
+  "echarts": "6.1.0",
+  "unitTests": 27,
+  "photoChecks": 25,
+  "travelChecks": 20,
+  "syntheticFixturesOnly": true,
+  "realWeChatAndPhoneTested": false
+}

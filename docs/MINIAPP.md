@@ -1,3 +1,14 @@
+# V0.3 当前能力边界
+
+**互动足迹地图、旅行编辑区和 IndexedDB 草稿仅提供 H5 实现。** 小程序条件编译排除 ECharts H5/浏览器存储模块，继续静态手账，并在界面提示未适配能力。没有把窗口/DOM/IndexedDB API 静默塞进小程序。
+
+后续需要：
+1. 以同一 Journal/Trip/Stop/Place 模型接 ec-canvas 原生2D节点，独立验证 geo/lines/scatter、地图点击、触摸缩放与标签布局。
+2. 将 H5 的 IndexedDB Blob 改为小程序文件存储＋版本化 JSON；实现空间配额、文件回收和恢复原子性。
+3. 导出节点独立初始化地图，验证图片跨节点绘制；不能复用 HTMLCanvasElement。
+4. 在开发者工具和 iPhone/Android 真机验证全流程与地图数据包体限制，必要时分包。当前构建不代表这些已完成。
+
+---
 # V0.2 增量验证要求
 
 - 新增本地地图、水彩底板和贴纸的 data URI → 本地文件 → Canvas Image 解码路径。
