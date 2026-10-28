@@ -1,0 +1,14 @@
+import {test} from 'node:test'
+import assert from 'node:assert/strict'
+import {createJournal,type Stop} from '../src/core/travel'
+import {posterMapSelection,mapProjector,posterMapColors} from '../src/core/poster-map'
+import {journey} from '../src/templates/journey'
+const stop=(id:string,region='620000',coord:[number,number]=[105.724,34.58]):Stop=>({id,place:{id,name:id,region,regionName:'甘肃省',coord,coordinateSystem:'WGS84'},date:'',note:'',photoSlot:''})
+const journal=(stops:Stop[])=>({...createJournal(),trips:[{id:'t',name:'足迹',note:'',stops}]})
+test('empty or legacy-only records use full country, no invented province',()=>{assert.equal(posterMapSelection(createJournal()).kind,'china');const s=stop('旧坐标');s.place.coordinateSystem='datav-native';assert.equal(posterMapSelection(journal([s])).kind,'china')})
+test('one place and same-province places fit the entire province, not just city coordinates',()=>{const j=journal([stop('天水')]);const a=posterMapSelection(j);assert.equal(a.kind,'province');assert.equal(a.name,'甘肃省');assert.equal(a.features.length,1);assert.ok(a.bounds[0][0]<93&&a.bounds[1][0]>108);j.trips[0].stops.push(stop('兰州','620000',[103.834,36.061]));assert.deepEqual(posterMapSelection(j).bounds,a.bounds)})
+test('cross-province stops use country even when cities are close',()=>{const a=posterMapSelection(journal([stop('杭州','330000',[120.15,30.28]),stop('上海','310000',[121.47,31.23])]));assert.equal(a.kind,'china');assert.equal(a.features.length,34)})
+test('trip selection, force-national, and unknown province fallback are deterministic',()=>{const j=journal([stop('天水')]);j.trips.push({id:'z',name:'杭州',note:'',stops:[stop('杭州','330000',[120.15,30.28])]});assert.equal(posterMapSelection(j).kind,'china');j.activeTrip='t';assert.equal(posterMapSelection(j).name,'甘肃省');j.exportScope='china';assert.equal(posterMapSelection(j).kind,'china');assert.equal(posterMapSelection(journal([stop('未知','990000')])).kind,'china')})
+test('manual highlights do not silently change the selected stop province',()=>{const j=journal([stop('天水')]);j.visitedRegions=['510000'];assert.equal(posterMapSelection(j).name,'甘肃省');assert.ok(posterMapSelection(j).visited.has('510000'))})
+test('projection keeps every polygon including islands within the padded canvas',()=>{for(const region of ['620000','330000','460000','810000','820000']){const a=posterMapSelection(journal([stop('a',region)])),project=mapProjector(a.bounds,715,540,48);for(const f of a.features)for(const poly of f.geometry.coordinates)for(const ring of poly)for(const v of ring){const [x,y]=project(v);assert.ok(x>=47.99&&x<=667.01&&y>=47.99&&y<=492.01,`${region} ${x},${y}`)}}})
+test('all three themes change land, outline, and pins rather than only the caption',()=>{const colors=journey.palettes.map(posterMapColors);for(const key of ['land','outline','pin','visited'] as const)assert.equal(new Set(colors.map(c=>c[key])).size,3)})

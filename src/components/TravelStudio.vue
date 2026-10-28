@@ -10,7 +10,8 @@
   <text class="travel-help">可缩放至城市、道路层级；点击聚合数字展开，点击足迹查看记录。“地图选点”可填写自定义地点。连线仅表示访问顺序，不是沿路导航。开启“地区点亮”后可点击地图省级区域，也可用下方列表；浅色覆盖仅供足迹概览，不是精确行政界线。</text>
   <text class="travel-help route-status" role="status">当前地图：{{ validStopCount }} 个有效地点 · {{ shownRouteCount }} 段连线{{ j.showRoutes?'':'（已隐藏）' }}。连线需要同一次旅行至少两个不同的已核验地点；点亮地区不会自动生成路线。</text>
   <view v-if="pending.length" class="travel-warning">有 {{ pending.length }} 条旧坐标待核验，仍保留在记录中，但不绘制到精细地图，也不跨这些记录连线。请在时间线点击“更新坐标”，或编辑为已核验的 WGS84 地点。</view>
-  <view class="travel-line"><label for="export-scope">海报地图范围</label><select :disabled="busy" id="export-scope" v-model="j.exportScope"><option value="trip">当前旅行范围（无有效点时为全国）</option><option value="china">全国足迹概览</option></select></view>
+  <view class="travel-line"><label for="export-scope">海报地图范围</label><select :disabled="busy" id="export-scope" v-model="j.exportScope"><option value="trip">自动：同省省图 / 跨省全国</option><option value="china">始终显示全国</option></select></view>
+  <text class="travel-help poster-map-help">海报使用本地透明行政区轮廓，与下方交互地图视窗无关；单个地点也显示完整省域，无有效地点时显示全国。配色在上方“地图与手账配色”中切换。</text>
   <view v-if="mapStops.length" class="map-stop-list"><button :disabled="busy" v-for="s in mapStops" :key="s.id" class="quiet" @click="inspectStop(s)">查看 {{ s.place.name }}</button></view>
   <view v-if="selectedStop" class="selected-stop"><text>{{ selectedStop.place.name }} · {{ selectedStop.date || '未填写日期' }}</text><text>{{ selectedStop.note || '还没有札记' }}</text><image v-if="selectedThumb" :src="selectedThumb" mode="aspectFill" class="stop-photo"/><text v-else-if="selectedStop.photoSlot">关联照片未找到</text><button :disabled="busy" class="quiet" @click="selectedStopId=''">收起</button></view>
   <view class="travel-line"><label for="trip-filter">地图范围</label><select :disabled="busy" id="trip-filter" v-model="j.activeTrip"><option value="all">全部旅行</option><option v-for="t in j.trips" :key="t.id" :value="t.id">{{ t.name }}</option></select></view>
@@ -36,7 +37,7 @@
    <view class="travel-line"><button :disabled="busy" class="solid" @click="saveStop">{{ editingId?'保存地点修改':'添加地点' }}</button><button :disabled="busy" v-if="editingId" class="quiet" @click="cancelEdit">取消编辑</button><button :disabled="busy" class="quiet danger" @click="deleteTrip">删除本次旅行</button></view>
   </view>
   <view class="travel-divider"></view>
-  <view class="travel-subtitle">本地草稿</view><text class="travel-help">{{ draftStatus }}。手动保存整个手账、冰箱贴、旅行记录和照片；不跨设备同步。浏览器清理数据后不可恢复，重要成品请另存。当前保留 {{ retainedPhotoCount }} / 32 张照片或冰箱贴源图，编码总量上限 30 MB；不是已实测的手机容量承诺。</text>
+  <view class="travel-subtitle">本地草稿</view><text class="travel-help">{{ draftStatus }}。手动保存整个手账、旅行记录和照片；不跨设备同步。浏览器清理数据后不可恢复，重要成品请另存。当前保留 {{ retainedPhotoCount }} / 32 张照片，编码总量上限 30 MB；不是已实测的手机容量承诺。</text>
   <view class="draft-actions"><button class="solid" :disabled="busy || (busy)" @click="$emit('save-draft')">保存本地草稿</button><button class="quiet" :disabled="busy || (busy)" @click="$emit('restore-draft')">恢复草稿</button><button class="quiet danger" :disabled="busy || (busy)" @click="$emit('clear-draft')">删除草稿</button></view>
   <text class="travel-warning">精细底图：OpenFreeMap / OpenMapTiles / OpenStreetMap；预设坐标：GeoNames（WGS84）。旧坐标未直接转换，预设地点也不等于测绘精度。中国地图内容、数据更新与最终公开发布要求仍需单独核实，旧静态图审图号不适用于新图。</text>
   <view v-if="hint" class="travel-feedback" role="status">{{ hint }}</view>

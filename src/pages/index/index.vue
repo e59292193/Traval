@@ -1,18 +1,17 @@
 <template>
  <view class="app-shell">
-  <view class="topbar"><view class="brand"><view class="brand-mark">↗</view><view><text class="brand-name">沿途</text><text class="brand-en">TRAVEL JOURNAL</text></view></view><text class="top-note">让每次出发，都有迹可循。</text><text class="prototype">{{ platform.name==='H5' ? 'H5 原型' : '小程序验证版' }} · v0.4.3</text></view>
+  <view class="topbar"><view class="brand"><view class="brand-mark">↗</view><view><text class="brand-name">沿途</text><text class="brand-en">TRAVEL JOURNAL</text></view></view><text class="top-note">让每次出发，都有迹可循。</text><text class="prototype">{{ platform.name==='H5' ? 'H5 原型' : '小程序验证版' }} · v0.4.4</text></view>
   <view class="intro"><view><text class="eyebrow">MAKE ROOM FOR MEMORIES</text><view class="intro-title">把足迹，装进一张手账地图。</view><text class="intro-sub">水彩纸张、地图拼贴和拍立得照片，收藏属于你的沿途。</text></view><text class="privacy">◉ 照片仅在当前设备内处理</text></view>
   <view class="workspace">
    <view class="preview-panel">
-    <view class="preview-toolbar"><text class="section-label">作品预览</text><text class="preview-tag">精细地图手账 · V4.3</text></view>
+    <view class="preview-toolbar"><text class="section-label">作品预览</text><text class="preview-tag">省域拼贴手账 · V4.4</text></view>
     <view class="poster-wrap"><view id="preview-host" class="poster-host" :class="{'is-cropping':cropOpen}">
      <!-- #ifdef MP-WEIXIN -->
      <canvas id="poster-preview" canvas-id="poster-preview" type="2d" class="mp-preview" :style="{width:mpPreviewWidth+'px',height:(mpPreviewWidth*journey.height/journey.width)+'px'}" :disable-scroll="cropOpen" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd" @touchcancel="touchEnd" />
      <!-- #endif -->
     </view><view v-if="!ready" class="preview-loading">{{ initializing ? '正在准备画布…' : '画布未就绪，请重试' }}</view></view>
-    <text v-if="mapBusy" class="map-state">正在准备精细地图，底图和字体需联网加载…</text><text v-if="mapWarning" class="map-state map-error">{{ mapWarning }}；当前预览为静态回退，不含精细足迹。导出时会再次尝试或请求确认回退。</text>
+    <text v-if="mapBusy" class="map-state">正在绘制省域手账地图…</text><text v-if="mapWarning" class="map-state map-error">{{ mapWarning }}；当前预览为静态回退，不含足迹轮廓。导出时会再次尝试或请求确认回退。</text>
     <view class="preview-footer"><text>{{ cropOpen ? '拖动画布可调整选中照片；也可使用位置滑杆' : '实时预览 · 导出时不包含编辑控件' }}</text><text>地图拼贴</text></view>
-    <button class="secondary travel-jump magnet-jump" :disabled="busy || !ready" @click="scrollMagnets">制作照片冰箱贴 ↓</button>
     <!-- #ifdef H5 -->
     <button class="secondary travel-jump" @click="scrollTravel">编辑足迹地图与旅行记录 ↓</button>
     <!-- #endif -->
@@ -30,7 +29,7 @@
       <view v-if="work.photos[slot.binding]" class="photo-actions"><button :disabled="busy" @click="openCrop(slot.binding)">裁剪</button><button :disabled="busy" @click="remove(slot.binding)">移除</button></view>
       <view class="caption-edit"><input :aria-label="`照片${i+1}标题`" v-model="work.captions[slot.binding].label" :maxlength="12" :disabled="busy" placeholder="照片标题"/><input :aria-label="`照片${i+1}日期`" v-model="work.captions[slot.binding].date" :maxlength="16" :disabled="busy" placeholder="日期（选填）"/></view>
      </view></view>
-     <text class="helper map-note">静态地图模式保留装饰拼贴；下方“旅行足迹”可添加真实到访记录。开启足迹合成后，地图上的照片卡片收起，避免遮挡地理标记；照片仍展示在“最近回忆”。</text>
+     <text class="helper map-note">默认保留原水彩地图；添加地点后，同省显示完整省域，跨省显示中国地图。地图颜色跟随下方主题，照片保留在“本页照片”。</text>
      <view v-if="cropOpen && selectedPhoto" class="crop-panel"><view class="crop-heading"><text>调整照片 {{ selected.slice(1) }}</text><button class="text-button" @click="cropOpen=false">完成</button></view><text class="helper">拖动预览平移照片，或使用下方滑杆</text>
       <RangeControl label="缩放" :model-value="Math.round(currentCrop.zoom*100)" :min="100" :max="300" :display="`${currentCrop.zoom.toFixed(2)}×`" @update:model-value="updateCrop('zoom',$event/100)"/>
       <RangeControl label="水平位置" :model-value="Math.round(currentCrop.x*100)" :min="0" :max="100" :display="`${Math.round(currentCrop.x*100)}%`" @update:model-value="updateCrop('x',$event/100)"/>
@@ -38,8 +37,7 @@
       <button class="text-button" @click="centerCrop">恢复居中</button>
      </view>
     </view>
-    <MagnetStudio :magnets="work.magnets" :photos="photos" :draft="magnetDraft" :draft-photo="magnetDraft ? photos.get(magnetDraft.assetId) : undefined" :editing="!!magnetDraft && work.magnets.some(m=>m.id===magnetDraft!.id)" :busy="busy" :ready="ready" :cutout-dirty="magnetCutoutDirty" @dirty="magnetCutoutDirty=true" @processing="magnetProcessing=$event" @processed="applyCutout" @upload="chooseMagnet" @update="updateMagnetDraft" @commit="commitMagnet" @cancel="cancelMagnet" @edit="editMagnet" @remove="removeMagnet" @move="moveMagnet" />
-    <view class="editor-section"><view class="step-title"><text class="step-number">03</text><text>挑一种心情</text></view><view class="palettes"><button v-for="p in journey.palettes" :key="p.id" :class="['palette',{'active':work.paletteId===p.id}]" :aria-label="`配色：${p.name}`" :aria-pressed="work.paletteId===p.id" :disabled="busy" @click="work.paletteId=p.id"><view class="swatches"><view :style="{background:p.ink}"/><view :style="{background:p.soft}"/><view :style="{background:p.tape}"/></view><text>{{ p.name }}</text><text v-if="work.paletteId===p.id" class="palette-check">✓</text></button></view></view>
+    <view class="editor-section"><view class="step-title"><text class="step-number">03</text><text>地图与手账配色</text></view><view class="palettes"><button v-for="p in journey.palettes" :key="p.id" :class="['palette',{'active':work.paletteId===p.id}]" :aria-label="`配色：${p.name}`" :aria-pressed="work.paletteId===p.id" :disabled="busy" @click="work.paletteId=p.id"><view class="swatches"><view :style="{background:p.ink}"/><view :style="{background:p.soft}"/><view :style="{background:p.tape}"/></view><text>{{ p.name }}</text><text v-if="work.paletteId===p.id" class="palette-check">✓</text></button></view></view>
     <view class="export-section"><view class="export-heading"><text>图片清晰度</text><text>JPEG</text></view><view class="resolution"><button :class="{'active':resolution===1500}" :disabled="busy" @click="resolution=1500">高清 · 1500 × 2010</button><button :class="{'active':resolution===1000}" :disabled="busy" @click="resolution=1000">轻量 · 1000 × 1340</button></view><button class="primary export-button" :disabled="busy || !ready" @click="exportWork">{{ exporting ? '正在生成图片…' : loading ? '正在处理照片…' : '导出我的旅行手账 ↗' }}</button><text class="export-hint">{{ !ready ? '画布准备好后即可导出' : '不上传照片 · H5 可在下方手动保存本地草稿' }}</text></view>
    </view>
   </view>
@@ -59,7 +57,7 @@
 </template>
 <script setup lang="ts">
 import {ref,reactive,computed,watch,onMounted,onBeforeUnmount,getCurrentInstance,markRaw,nextTick} from 'vue'
-import type {Photo,Work,Field,Crop,Target,ExportResult,Magnet} from '../../types'
+import type {Photo,Work,Field,Crop,Target,ExportResult} from '../../types'
 import {journey} from '../../templates/journey'
 import {templateAssets} from '../../assets'
 import {samplePhotos} from '../../assets/samples'
@@ -69,9 +67,7 @@ import {limits,limitText,graphemes} from '../../core/text'
 import {panCrop,normalizeCrop} from '../../core/crop'
 import {drawPoster} from '../../render/poster'
 import {createPlatform,setCropMode} from '../../platform'
-import MagnetStudio from '../../components/MagnetStudio.vue'
-import type {CutoutRecipe} from '../../core/sticker'
-import {MAX_MAGNETS,magnetAssetIds} from '../../core/magnets'
+import {magnetAssetIds} from '../../core/magnets'
 import RangeControl from '../../components/RangeControl.vue'
 import {createJournal,validateJournal} from '../../core/travel'
 // #ifdef H5
@@ -82,14 +78,13 @@ import {saveDraft,loadDraft,draftDate,deleteDraft} from '../../platform/drafts-h
 const platform=createPlatform(),scope=getCurrentInstance()?.proxy
 const mpPreviewWidth=Math.min(420,Math.max(120,uni.getSystemInfoSync().windowWidth-64))
 const work=reactive<Work>(createWork(journey)),photos=reactive(new Map<string,Photo>()),assets=new Map<string,Photo>()
-const magnetDraft=ref<Magnet|null>(null),magnetCutoutDirty=ref(true),magnetProcessing=ref(false)
 const inputValues=reactive({...work.text})
 const journal=reactive(createJournal()),draftSavedAt=ref(''),draftDirty=ref(false)
 const activePalette=computed(()=>journey.palettes.find(p=>p.id===work.paletteId)||journey.palettes[0])
 const draftStatus=computed(()=>draftSavedAt.value?'本地保存于 '+new Date(draftSavedAt.value).toLocaleString()+(draftDirty.value?' · 有未保存修改':''):'尚未保存本地草稿')
 const photoIds=computed(()=>Object.fromEntries(Object.entries(work.photos).map(([slot,b])=>[slot,b?.assetId||''])))
 const photoThumbs=computed(()=>({...Object.fromEntries([...photos.values()].map(p=>[p.id,p.thumbnail])),...Object.fromEntries(Object.entries(work.photos).map(([slot,b])=>[slot,b?photos.get(b.assetId)?.thumbnail||'':'']))}))
-function photoReferenced(id:string){return !!magnetDraft.value&&magnetAssetIds(magnetDraft.value).includes(id)||work.magnets.some(m=>magnetAssetIds(m).includes(id))||Object.values(work.photos).some(b=>b?.assetId===id)||journal.trips.some(t=>t.stops.some(s=>s.photoId===id))}
+function photoReferenced(id:string){return work.magnets.some(m=>magnetAssetIds(m).includes(id))||Object.values(work.photos).some(b=>b?.assetId===id)||journal.trips.some(t=>t.stops.some(s=>s.photoId===id))}
 function releasePhoto(id:string){if(!photoReferenced(id)){photos.get(id)?.dispose();photos.delete(id)}}
 watch(()=>journal.trips.flatMap(t=>t.stops.map(s=>s.photoId)),()=>{for(const id of photos.keys())releasePhoto(id)})
 const photoExamples=computed(()=>Object.fromEntries(Object.entries(work.photos).map(([slot,b])=>[slot,!!b?.example])))
@@ -118,18 +113,18 @@ async function applyTrip(id:string){
 async function saveLocal(){
  // #ifdef H5
  if(busy.value||!ready.value)return;loading.value=true
- try{validateJournal(journal);const before=JSON.stringify({work,journal});draftSavedAt.value=await saveDraft(work,journal,photos);draftDirty.value=JSON.stringify({work,journal})!==before;notify('手账、已加入的冰箱贴、旅行记录和照片已保存到本机浏览器。')}catch(e){fail(e)}finally{loading.value=false}
+ try{validateJournal(journal);const before=JSON.stringify({work,journal});draftSavedAt.value=await saveDraft(work,journal,photos);draftDirty.value=JSON.stringify({work,journal})!==before;notify('手账、旅行记录和照片已保存到本机浏览器。')}catch(e){fail(e)}finally{loading.value=false}
  // #endif
 }
 async function restoreLocal(){
  // #ifdef H5
  if(busy.value||!target)return
- if(!await confirm('恢复本地草稿？','将替换当前手账、照片、冰箱贴和旅行记录，未保存的编辑会丢失。'))return
+ if(!await confirm('恢复本地草稿？','将替换当前手账、照片和旅行记录，未保存的编辑会丢失。'))return
  loading.value=true;const decoded:Photo[]=[]
  try{const draft=await loadDraft();if(!draft){notify('这台设备的当前浏览器还没有保存草稿。');return}
  for(const item of draft.photos){const url=URL.createObjectURL(item.blob);try{const p=await platform.loadAsset(target,item.id,url);p.thumbnail=url;const dispose=p.dispose;p.dispose=()=>{dispose();URL.revokeObjectURL(url)};decoded.push(p)}catch(e){URL.revokeObjectURL(url);throw e}}
  if(!alive){for(const p of decoded)p.dispose();return}
- magnetDraft.value=null;for(const p of photos.values())p.dispose();photos.clear();for(const p of decoded)photos.set(p.id,markRaw(p))
+ for(const p of photos.values())p.dispose();photos.clear();for(const p of decoded)photos.set(p.id,markRaw(p))
  Object.assign(work,draft.work);Object.assign(inputValues,work.text);Object.assign(journal,draft.journal);draftSavedAt.value=draft.savedAt;cropOpen.value=false;prepareTravelMap();await nextTick();draftDirty.value=false;notify('已恢复草稿；足迹与照片均来自本机，不是云端同步。')
  }catch(e){for(const p of decoded)p.dispose();fail(e)}finally{loading.value=false}
  // #endif
@@ -142,7 +137,7 @@ async function clearLocal(){
 }
 const detailsOpen=ref(false)
 const ready=ref(false),initializing=ref(false),loading=ref(false),exporting=ref(false),saving=ref(false),message=ref(''),isError=ref(false),cropOpen=ref(false),selected=ref('p1'),resolution=ref(1500),result=ref<ExportResult|null>(null),saveHint=ref('桌面端可下载；手机或微信内可长按图片保存。')
-const busy=computed(()=>loading.value||exporting.value||saving.value||magnetProcessing.value)
+const busy=computed(()=>loading.value||exporting.value||saving.value)
 const slots=journey.layers.filter((l):l is Extract<typeof l,{type:'photo'}>=>l.type==='photo')
 const fields:{key:Field;label:string;placeholder:string}[]=[{key:'title',label:'主标题',placeholder:'My Travel Map'},{key:'subtitle',label:'目的地 / 副标题',placeholder:'记录沿途的美好'},{key:'date',label:'旅行日期（选填）',placeholder:'例如：2026.10.01 — 10.07'},{key:'name',label:'昵称',placeholder:'Traveler'},{key:'note',label:'旅行札记',placeholder:'写下旅途中的小事'},{key:'wish',label:'下一站心愿',placeholder:'下一站，继续出发'}]
 const visibleFields=computed(()=>detailsOpen.value?fields:fields.slice(0,3))
@@ -151,7 +146,6 @@ const exampleCount=computed(()=>Object.values(work.photos).filter(b=>b?.example)
 const selectedPhoto=computed(()=>{const b=work.photos[selected.value];return b?photos.get(b.assetId):undefined})
 const currentCrop=computed(()=>work.photos[selected.value]?.crop||{zoom:1,x:.5,y:.5})
 let target:Target|undefined,unbind=()=>{},cancelFrame=()=>{},pending=false,alive=true,requestVersion=0
-function scrollMagnets(){uni.pageScrollTo({selector:'.magnet-studio',duration:300})}
 function scrollTravel(){uni.pageScrollTo({selector:'.travel-studio',duration:300})}
 function notify(text:string,error=false){message.value=text;isError.value=error}
 function fail(e:unknown){notify(e instanceof Error?e.message:'操作失败，请重试；当前作品仍然保留',true)}
@@ -180,37 +174,6 @@ async function editText(field:Field,event:any){
   notify(`${fields.find(f=>f.key===field)!.label}最多 ${limits[field]} 个字符，已保留限制内文字`)
  }
 }
-function cancelMagnet(){if(busy.value)return;const ids=magnetDraft.value?magnetAssetIds(magnetDraft.value):[];magnetDraft.value=null;for(const id of ids)releasePhoto(id)}
-async function chooseMagnet(){
- if(!target||busy.value||magnetDraft.value||work.magnets.length>=MAX_MAGNETS)return
- loading.value=true;const version=++requestVersion
- try{if(photos.size>=31)throw new Error('需为原图和处理结果预留两个位置。照片与冰箱贴共用 32 张本地图片上限，请移除不再需要的图片后重试')
- const p=await platform.choosePhoto(target);if(!p)return;if(!alive||version!==requestVersion){p.dispose();return}
- photos.set(p.id,markRaw(p));magnetDraft.value={id:'magnet-'+Date.now()+'-'+Math.random().toString(36).slice(2),assetId:p.id,style:'ceramic',crop:{zoom:1,x:.5,y:.5}};
- // #ifdef H5
- magnetDraft.value.style='cutout';magnetDraft.value.sourceAssetId=p.id;magnetCutoutDirty.value=true
- // #endif
- cropOpen.value=false
- // #ifdef H5
- notify('图片已就绪。先抠出主体，再生成异形冰箱贴，确认后加入手账。')
- // #endif
- // #ifdef MP-WEIXIN
- notify('小程序暂用旧版照片贴；本地异形抠图请在 H5 使用。')
- // #endif
- }catch(e){fail(e)}finally{loading.value=false}
-}
-function updateMagnetDraft(m:Magnet){if(m.style==='cutout'&&magnetDraft.value?.style!=='cutout')magnetCutoutDirty.value=true;magnetDraft.value=m}
-async function applyCutout(data:{png:string;recipe:CutoutRecipe}){
- if(!target||!magnetDraft.value)return;loading.value=true;const draftId=magnetDraft.value.id
- try{if(photos.size>=32)throw new Error('本地源图已达 32 张上限，请先移除不再需要的图片再生成')
- const p=await platform.loadAsset(target,'sticker-'+Date.now()+'-'+Math.random().toString(36).slice(2),data.png);if(!alive||magnetDraft.value?.id!==draftId){p.dispose();return}
- const old=magnetDraft.value.assetId;photos.set(p.id,markRaw(p));magnetDraft.value={...magnetDraft.value,assetId:p.id,style:'cutout',cutout:data.recipe};magnetCutoutDirty.value=false;releasePhoto(old);notify('异形冰箱贴已生成，请检查轮廓后加入手账。')
- }catch(e){fail(e)}finally{loading.value=false}
-}
-function commitMagnet(){if(busy.value||!magnetDraft.value||magnetDraft.value.style==='cutout'&&magnetCutoutDirty.value)return;const m=JSON.parse(JSON.stringify(magnetDraft.value)) as Magnet,index=work.magnets.findIndex(i=>i.id===m.id);if(index<0){if(work.magnets.length>=MAX_MAGNETS)return;work.magnets.push(m)}else{const old=work.magnets[index];work.magnets[index]=m;for(const id of magnetAssetIds(old))releasePhoto(id)}magnetDraft.value=null;notify('冰箱贴已放入手账，可随作品导出。记得保存本地草稿。')}
-function editMagnet(id:string){if(busy.value||magnetDraft.value)return;const m=work.magnets.find(m=>m.id===id);if(m){magnetDraft.value=JSON.parse(JSON.stringify(m));magnetCutoutDirty.value=false}}
-function removeMagnet(id:string){if(busy.value||magnetDraft.value)return;const i=work.magnets.findIndex(m=>m.id===id);if(i<0)return;const [m]=work.magnets.splice(i,1);for(const id of magnetAssetIds(m))releasePhoto(id);notify('冰箱贴已移除，空位恢复原装饰。')}
-function moveMagnet(i:number,d:number){if(busy.value||magnetDraft.value)return;const j=i+d;if(j<0||j>=work.magnets.length)return;[work.magnets[i],work.magnets[j]]=[work.magnets[j],work.magnets[i]]}
 async function choose(slot:string){if(!target||busy.value)return;loading.value=true;const version=++requestVersion;try{if(photos.size>=32)throw new Error('已保留 32 张旅行/手账照片，请先删除不再需要的旅行照片记录后重试');const photo=await platform.choosePhoto(target);if(!photo)return;if(!alive||version!==requestVersion){photo.dispose();return}const old=work.photos[slot];photos.set(photo.id,markRaw(photo));work.photos[slot]={assetId:photo.id,crop:{zoom:1,x:.5,y:.5}};if(old)releasePhoto(old.assetId);selected.value=slot;notify('照片已放入。点击“裁剪”可调整构图。')}catch(e){fail(e)}finally{loading.value=false}}
 async function loadExample(){
  if(!target||busy.value)return
@@ -240,7 +203,7 @@ function touchStart(e:any){if(cropOpen.value){const p=e.touches?.[0];if(p)lastTo
 function touchMove(e:any){const p=e.touches?.[0];if(!p||!lastTouch)return;const x=p.x??p.clientX,y=p.y??p.clientY;const width=mpPreviewWidth;drag((x-lastTouch.x)*1000/width,(y-lastTouch.y)*1000/width);lastTouch={x,y}}
 function touchEnd(){lastTouch=null}
 const confirm=(title:string,content:string)=>new Promise<boolean>(resolve=>uni.showModal({title,content,confirmText:'确认',cancelText:'取消',success:r=>resolve(r.confirm),fail:()=>resolve(false)}))
-async function reset(){if(busy.value||!await confirm('重置当前作品？','将清空当前照片、冰箱贴、旅行记录和地区标记并恢复默认文字；本地草稿不会删除。'))return;magnetDraft.value=null;for(const p of photos.values())p.dispose();photos.clear();Object.assign(work,createWork(journey));Object.assign(inputValues,work.text);Object.assign(journal,createJournal());cropOpen.value=false;notify('已重置手账和旅行记录；本地已保存草稿未删除。')}
+async function reset(){if(busy.value||!await confirm('重置当前作品？','将清空当前照片、旅行记录和地区标记并恢复默认文字；本地草稿不会删除。'))return;for(const p of photos.values())p.dispose();photos.clear();Object.assign(work,createWork(journey));Object.assign(inputValues,work.text);Object.assign(journal,createJournal());cropOpen.value=false;notify('已重置手账和旅行记录；本地已保存草稿未删除。')}
 async function exportWork(){
  if(busy.value||!ready.value)return
  exporting.value=true;let output:Target|undefined
@@ -249,7 +212,7 @@ async function exportWork(){
   cropOpen.value=false;if(exampleCount.value&&!await confirm('海报中包含示例照片',`仍有 ${exampleCount.value} 张 AI 示例照片，不代表你的真实旅行记录。是否继续导出？`))return
   const warning=await platform.prepareFonts();if(warning)notify(warning)
   output=await platform.createTarget('poster-export',resolution.value,Math.round(resolution.value*journey.height/journey.width),false,scope)
-  clearTimeout(mapTimer);const mapReady=await prepareTravelMap();if(journal.mapEnabled&&!mapReady&&!await confirm('精细地图未准备好','当前无法导出完整精细地图。是否改用静态底图手账？静态图不展示精细足迹路线。'))return
+  clearTimeout(mapTimer);const mapReady=await prepareTravelMap();if(journal.mapEnabled&&!mapReady&&!await confirm('足迹轮廓未准备好','当前无法绘制足迹轮廓。是否改用静态底图手账？静态图不展示到访标记路线。'))return
   drawPoster(output.ctx,journey,work,photos,output.width,assets,journal)
   const generated=await platform.exportJPEG(output)
   if(!alive){generated.dispose();return}
