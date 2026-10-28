@@ -1,4 +1,4 @@
-import {drawMagnet} from './magnet'
+import {posterMapSelection} from '../core/poster-map'
 import {travelStats,visibleTrips,type Journal} from '../core/travel'
 import type {DrawContext,Template,Work,Photo,Palette} from '../types'
 import {cropRect} from '../core/crop'
@@ -53,12 +53,12 @@ function scene(c:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,asset
  c.restore()
  paragraph(c,'Hi, '+work.text.name,34,286,183,31,19,1,p.ink,HAND)
  paragraph(c,work.text.subtitle,41,336,152,20,16,3,p.ink,HAND,1.4)
- const menu=[['◎','地图'],['○','足迹'],['▧','照片'],['◇','冰箱贴'],['▤','票根'],['☆','纪念品'],['□','行程'],['♡','心愿清单'],['▥','本页记录'],['⚙','设置']]
+ const menu=[['◎','地图'],['○','足迹'],['▧','照片'],['▤','票根'],['☆','纪念品'],['□','行程'],['♡','心愿清单'],['▥','本页记录'],['⚙','设置']]
  menu.forEach(([icon,text],i)=>{const y=444+i*39;label(c,icon,51,y,21,p.ink);label(c,text,89,y,20,p.ink,HAND)})
  // Actual page content, not invented trip/country statistics.
  const count=Object.values(work.photos).filter(Boolean).length,stats=journal?travelStats(journal):null,hasTrips=!!stats&&(!!stats.stops||!!stats.regions||!!stats.trips||!!journal?.mapEnabled)
  const dynamic=!!journal?.mapEnabled&&assets.has('travel-map')
- if(dynamic&&journal){const selected=visibleTrips(journal);label(c,journal.exportScope==='china'?'中国旅行足迹':'旅途足迹',300,133,15,p.ink);paragraph(c,journal.activeTrip==='all'?'全部旅行':selected[0]?.name||'旅行足迹',300,151,340,13,11,1,p.accent)}
+ if(dynamic&&journal){const selected=visibleTrips(journal);label(c,posterMapSelection(journal).name+' · 旅行足迹',270,133,18,p.ink);paragraph(c,journal.activeTrip==='all'?'全部旅行':selected[0]?.name||'旅行足迹',270,158,500,13,11,1,p.accent)}
  label(c,'我的足迹',244,701,24,p.ink,HAND,'600')
  paragraph(c,String(hasTrips?stats!.cities:count).padStart(2,'0'),260,753,95,66,42,1,p.ink,HAND)
  label(c,hasTrips?'个地点 · 全部旅行':'张照片 · 本页珍藏',248,831,17,p.ink)
@@ -67,8 +67,12 @@ function scene(c:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,asset
  sticker(c,assets,2,365,756,63)
  label(c,hasTrips?'本页照片':'最近回忆',455,724,25,p.ink,HAND,'600');label(c,'♡',591,716,31,'#c58d55',HAND)
  for(let i=0;i<4;i++)photo(c,{id:'memory-'+i,type:'photo',binding:'p'+(i+1),caption:'片刻',x:457+i*122,y:777+(i%2)*5,width:109,height:129,rotation:[-5,4,-3,6][i],opacity:1,radius:2,padding:6,captionHeight:39,captionSize:12},work,photos,p,true)
- label(c,'我的冰箱贴',48,949,25,p.ink,HAND,'600');label(c,work.magnets?.length?'我的珍藏':'旅行灵感',330,955,13,p.accent)
- for(let i=0;i<8;i++){const m=work.magnets?.[i],p=m&&photos.get(m.assetId),x=47+(i%4)*96,y=994+Math.floor(i/4)*78;if(m&&p)drawMagnet(c,m,p,x+6,y+3,64,[-5,4,-3,5,3,-4,4,-3][i]);else sticker(c,assets,i,x,y,78)}
+ // Replace the former cork / magnet effect with a quiet travel notes card.
+ c.fillStyle='#fff8eaf5';rounded(c,31,931,405,236,22);c.fill()
+ label(c,'旅途拾光',48,949,25,p.ink,HAND,'600');label(c,'PLACES & MEMORIES',48,985,11,p.accent)
+ const memories=journal?visibleTrips(journal).flatMap(t=>t.stops).slice(0,3):[]
+ if(memories.length)memories.forEach((stop,i)=>{const y=1016+i*43;label(c,String(i+1).padStart(2,'0'),49,y,17,p.accent,HAND);paragraph(c,stop.place.name,84,y,325,18,14,1,p.ink,HAND);paragraph(c,stop.date||stop.place.regionName,84,y+23,325,11,10,1,p.accent)})
+ else paragraph(c,'把走过的地方，\n写成一页温柔的回忆。',49,1023,350,22,18,4,p.ink,HAND,1.7)
  label(c,'旅行札记',470,951,24,p.ink,HAND,'600')
  paragraph(c,work.text.note,470,998,229,21,16,5,p.ink,HAND,1.5)
  c.strokeStyle=p.accent;c.lineWidth=1.3;c.setLineDash([4,5]);c.beginPath();c.moveTo(474,1140);c.bezierCurveTo(530,1110,620,1160,700,1126);c.stroke();c.setLineDash([])
@@ -80,7 +84,7 @@ function scene(c:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,asset
  for(const [i,word] of ['出发','遇见','收藏','再出发'].entries()){pin(c,426+i*133,1231,.7);label(c,word,426+i*133,1274,14,p.ink,FONT,'400','center')}
  const examples=Object.values(work.photos).filter(b=>b?.example).length
  if(examples)label(c,`示例照片 ${examples}/4 · AI生成场景，不是真实旅行记录`,461,667,11,'#91613a')
- label(c,dynamic?'MapLibre 精细底图 · 连线非导航 · 坐标 GeoNames / 用户核验':'静态底图 GS(2016)2923号 · 照片为手账拼贴，不作地理定位',461,684,11,'#6a6758')
+ label(c,dynamic?'行政区轮廓示意 · 连线非导航 · WGS84 / 用户核验':'静态底图 GS(2016)2923号 · 照片为手账拼贴，不作地理定位',461,684,11,'#6a6758')
 }
 export function drawPoster(ctx:DrawContext,t:Template,work:Work,photos:Map<string,Photo>,width:number,assets:Map<string,Photo>=new Map(),journal?:Journal){
  const ratio=width/t.width,p=t.palettes.find(p=>p.id===work.paletteId)||t.palettes[0]

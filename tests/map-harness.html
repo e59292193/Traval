@@ -3,9 +3,10 @@ import {Map} from 'maplibre-gl'
 import {reactive} from 'vue'
 import {createTravelMap,renderTravelMap,disposeMapExport} from '/src/platform/travel-map-h5.ts'
 import {createJournal} from '/src/core/travel.ts'
+import {journey} from '/src/templates/journey.ts'
 import {toggleManualRegion} from '/src/core/region-map.ts'
 const maps=[],mapErrors=[];const fire=Map.prototype.fire;Map.prototype.fire=function(...args){if(args[0]?.type==='error')mapErrors.push(args[0].error?.message||String(args[0].error));return fire.apply(this,args)};const original=Map.prototype.on;Map.prototype.on=function(...args){if(!maps.includes(this))maps.push(this);return original.apply(this,args)}
-const j=reactive(createJournal()),p={id:'test',accent:'#526c58'},events={regions:[],stops:[],picks:[],status:[]}
+const j=reactive(createJournal()),p=journey.palettes[0],events={regions:[],stops:[],picks:[],status:[]}
 const view=createTravelMap(document.querySelector('#map'),{onRegion:id=>{events.regions.push(id);toggleManualRegion(j,id);view.update(j,p)},onStop:id=>events.stops.push(id),onPick:c=>events.picks.push(c),onStatus:s=>events.status.push(s)})
 view.update(j,p)
 window.t={j,p,events,view,maps,mapErrors,update(){view.update(j,p)},async export(){const c=await renderTravelMap(j,p);const target=document.querySelector('#export');target.width=c.width;target.height=c.height;target.getContext('2d').drawImage(c,0,0);return target.toDataURL('image/png')},dispose(){view.dispose();disposeMapExport()}}

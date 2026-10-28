@@ -1,6 +1,7 @@
 import {Map as LibreMap,NavigationControl,setWorkerUrl,type GeoJSONSource} from 'maplibre-gl'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import {drawTravelMap} from '../render/travel-map'
 import {travelBaseStyle} from '../core/map-style'
 import {regionFeatures,visibleRegionIds} from '../core/region-map'
 import regionData from '../data/regions.json'
@@ -69,23 +70,8 @@ export function createTravelMap(host:HTMLElement,callbacks:MapCallbacks){
  })
  return{update(j:Journal,p:Palette){latest=j;palette=p;update()},reset(){if(latest&&loaded)fit(map,latest,'trip')},overview(){if(latest&&loaded)fit(map,latest,'china')},setPicking(value:boolean){picking=value;map.getCanvas().style.cursor=value?'crosshair':''},setMarking(value:boolean){marking=value},focus(coord:[number,number]){map.easeTo({center:coord,zoom:12,duration:250})},dispose(){disposed=true;clearTimeout(errorTimer);observer.disconnect();map.remove()}}
 }
-let exportHost:HTMLDivElement|undefined,exportMap:LibreMap|undefined,exportKey='',queue:Promise<unknown>=Promise.resolve(),exportError=false,requestGeneration=0
-function idle(map:LibreMap,timeout=22000):Promise<void>{return new Promise((resolve,reject)=>{let timer:ReturnType<typeof setTimeout>;const done=()=>{clearTimeout(timer);map.off('idle',check);map.off('remove',removed)};const check=()=>{if(map.loaded()&&map.areTilesLoaded()){done();resolve()}};const removed=()=>{done();reject(new Error('地图导出已取消'))};map.on('idle',check);map.on('remove',removed);timer=setTimeout(()=>{done();reject(new Error('精细地图资源加载超时，请检查网络或改用静态模式'))},timeout);map.triggerRepaint();check()})}
-export function renderTravelMap(j:Journal,p:Palette,width=1430,height=1080):Promise<HTMLCanvasElement>{
- const snapshot=JSON.parse(JSON.stringify(j)) as Journal,generation=++requestGeneration
- const job=async()=>{
-  if(generation!==requestGeneration)throw new Error('地图预览已更新')
-  const key=JSON.stringify({features:mapFeatures(snapshot),regions:visibleRegionIds(snapshot),scope:snapshot.exportScope,palette:p.id,width,height})
-  if(!exportMap){exportHost=document.createElement('div');exportHost.style.cssText='position:fixed;left:-20000px;top:0;width:715px;height:540px;pointer-events:none';document.body.appendChild(exportHost);try{exportError=false;exportMap=makeMap(exportHost,p,true);exportMap.on('error',()=>{exportError=true})}catch(e){exportHost.remove();exportHost=undefined;throw new Error('当前设备不能创建 WebGL2 地图，请使用静态模式')}}
-  const map=exportMap
-  if(exportError)throw new Error('部分精细地图资源加载失败，请重试或关闭足迹地图合成')
-  if(key!==exportKey){await idle(map);if(exportError)throw new Error('精细地图资源不可用，请重试或使用静态模式');await addTravelLayers(map,snapshot,p);fit(map,snapshot,snapshot.exportScope||'trip');await idle(map);if(exportError)throw new Error('部分精细地图资源加载失败，请重试或关闭足迹地图合成');exportKey=key}
-  const out=document.createElement('canvas');out.width=width;out.height=height;const c=out.getContext('2d');if(!c)throw new Error('地图导出内存不足')
-  c.drawImage(map.getCanvas(),0,0,width,height)
-  const ratio=width/715,bar=Math.ceil(31*ratio);c.fillStyle='#fffdf1ee';c.fillRect(0,height-bar,width,bar);c.fillStyle='#4e5e50';c.font=`${Math.round(11*ratio)}px sans-serif`;c.textBaseline='middle';c.fillText(MAP_ATTRIBUTION,12*ratio,height-bar/2)
-  // Readback forces any origin-clean/CORS failure to surface before this layer is used by the poster.
-  c.getImageData(0,0,1,1);return out
- }
- const result=queue.then(job,job);queue=result.catch(()=>{});return result
+// Poster composition uses local administrative cutouts, not screenshots of the interactive map.
+export async function renderTravelMap(j:Journal,p:Palette,width=1430,height=1080):Promise<HTMLCanvasElement>{
+ return drawTravelMap(JSON.parse(JSON.stringify(j)),p,width,height)
 }
-export function disposeMapExport(){requestGeneration++;exportMap?.remove();exportMap=undefined;exportHost?.remove();exportHost=undefined;exportKey=''}
+export function disposeMapExport(){/* No WebGL export map or remote resources to retain. */}

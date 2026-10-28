@@ -1,0 +1,22 @@
+<!doctype html><html lang="zh-CN"><meta charset="UTF-8"><title>省域海报测试</title><style>body{margin:0;background:#efe5d3}canvas{display:block;max-width:100%;height:auto}</style><canvas id="poster"></canvas><script type="module">
+import {drawTravelMap} from '/src/render/travel-map.ts'
+import {drawPoster} from '/src/render/poster.ts'
+import {journey} from '/src/templates/journey.ts'
+import {createWork} from '/src/core/work.ts'
+import {createJournal} from '/src/core/travel.ts'
+import {posterMapSelection} from '/src/core/poster-map.ts'
+import {templateAssets} from '/src/assets/index.ts'
+import {caveatFont} from '/src/assets/caveat.ts'
+const assets=new Map(),photos=new Map(),work=createWork(journey),j=createJournal();
+for(const a of templateAssets){const i=new Image();i.src=a.source;await i.decode();assets.set(a.id,{source:i,width:i.width,height:i.height})}
+try{const f=new FontFace('TravalCaveat',`url(${caveatFont})`);document.fonts.add(await f.load())}catch{}
+const stop=(name,region,coord)=>({id:name,place:{id:name,name,region,regionName:region,coord,coordinateSystem:'WGS84'},date:'2026-10-28',note:'',photoSlot:''})
+window.qa={j,work,async render(mode='gansu',theme='sage'){
+ work.paletteId=theme;work.text.title=mode==='gansu'?'天水':mode==='zhejiang'?'江南小记':'沿途';j.mapEnabled=mode!=='empty';j.exportScope='trip';
+ const stops=mode==='gansu'?[stop('天水','620000',[105.724,34.58])]:mode==='zhejiang'?[stop('杭州','330000',[120.15,30.28]),stop('宁波','330000',[121.55,29.87])]:[stop('天水','620000',[105.724,34.58]),stop('杭州','330000',[120.15,30.28]),stop('北京','110000',[116.41,39.9])];
+ j.trips=mode==='empty'?[]:[{id:'t',name:work.text.title,note:'',stops}];j.activeTrip='all';
+ const p=journey.palettes.find(p=>p.id===theme);const map=drawTravelMap(j,p);assets.set('travel-map',{source:map,width:map.width,height:map.height});
+ const c=document.querySelector('#poster');c.width=1000;c.height=1340;drawPoster(c.getContext('2d'),journey,work,photos,1000,assets,j);
+ return{selection:posterMapSelection(j).name,corner:[...map.getContext('2d').getImageData(0,0,1,1).data],map:map.toDataURL(),poster:c.toDataURL()}
+}};await qa.render();window.ready=true;
+</script></html>
